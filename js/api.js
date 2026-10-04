@@ -1,11 +1,11 @@
 // ============================================================
-// API Client - «· Ê«’· „⁄ Google Apps Script
+// API Client - √á√°√ä√¶√á√ï√° √£√ö Google Apps Script
 // ============================================================
 
 const API = {
 
   // ============================================================
-  // ÿ·» ⁄«„
+  // √ò√°√à √ö√á√£
   // ============================================================
   async request(action, params = {}) {
     try {
@@ -13,7 +13,7 @@ const API = {
       
       const response = await fetch(url, {
         method: 'POST',
-        mode: 'no-cors', // „Â„ · ›«œÌ „‘«ﬂ· CORS
+        mode: 'no-cors', // √£√•√£ √°√ä√ù√á√è√≠ √£√î√á√ü√° CORS
         headers: {
           'Content-Type': 'application/json',
         },
@@ -23,8 +23,8 @@ const API = {
         })
       });
 
-      // »”»» no-cors° „‘ Â‰ﬁœ— ‰ﬁ—√ «·—œ „»«‘—…
-      // Â‰” Œœ„ ÿ—Ìﬁ… »œÌ·… (JSONP style)
+      // √à√ì√à√à no-cors¬° √£√î √•√§√û√è√ë √§√û√ë√É √á√°√ë√è √£√à√á√î√ë√â
+      // √•√§√ì√ä√é√è√£ √ò√ë√≠√û√â √à√è√≠√°√â (JSONP style)
       return { success: true };
       
     } catch (error) {
@@ -34,7 +34,7 @@ const API = {
   },
 
   // ============================================================
-  // ÿ·» ⁄»— GET (√”Â· ›Ì «·ﬁ—«¡…)
+  // √ò√°√à √ö√à√ë GET (√É√ì√•√° √ù√≠ √á√°√û√ë√á√Å√â)
   // ============================================================
   async requestGet(action, params = {}) {
     try {
@@ -60,7 +60,7 @@ const API = {
   },
 
   // ============================================================
-  // ÿ·» ⁄»— JSONP (· ŒÿÌ CORS)
+  // √ò√°√à √ö√à√ë JSONP (√°√ä√é√ò√≠ CORS)
   // ============================================================
   requestJSONP(action, params = {}) {
     return new Promise((resolve, reject) => {
@@ -91,17 +91,17 @@ const API = {
   },
 
   // ============================================================
-  // Ping - «Œ »«— «·« ’«·
+  // Ping - √á√é√ä√à√á√ë √á√°√á√ä√ï√á√°
   // ============================================================
   async ping() {
     return this.requestGet('ping');
   },
 
   // ============================================================
-  // ============== œÊ«· «·√œ„‰ ==============
+  // ============== √è√¶√á√° √á√°√É√è√£√§ ==============
   // ============================================================
 
-  // ≈÷«›… „œ—” ÃœÌœ
+  // √Ö√ñ√á√ù√â √£√è√ë√ì √å√è√≠√è
   async addTeacher(teacherName, subject, classesCount) {
     return this.requestGet('addTeacher', {
       teacherName: teacherName,
@@ -110,26 +110,26 @@ const API = {
     });
   },
 
-  // Ã·» ﬂ· «·„œ—”Ì‰
+  // √å√°√à √ü√° √á√°√£√è√ë√ì√≠√§
   async getAllTeachers() {
     return this.requestGet('getAllTeachers');
   },
 
-  // Õ–› „œ—”
+  // √ç√ê√ù √£√è√ë√ì
   async deleteTeacher(code) {
     return this.requestGet('deleteTeacher', { code: code });
   },
 
   // ============================================================
-  // ============== œÊ«· «·„œ—” ==============
+  // ============== √è√¶√á√° √á√°√£√è√ë√ì ==============
   // ============================================================
 
-  // «· Õﬁﬁ „‰ «·ﬂÊœ
+  // √á√°√ä√ç√û√û √£√§ √á√°√ü√¶√è
   async verifyCode(code) {
     return this.requestGet('verifyCode', { code: code });
   },
 
-  // Õ›Ÿ »Ì«‰«  «·›’·
+  // √ç√ù√ô √à√≠√á√§√á√ä √á√°√ù√ï√°
   async saveClass(code, classNumber, classData) {
     return this.requestGet('saveClass', {
       code: code,
@@ -142,7 +142,7 @@ const API = {
     });
   },
 
-  // Ã·» »Ì«‰«  «·›’·
+  // √å√°√à √à√≠√á√§√á√ä √á√°√ù√ï√°
   async getClass(code, classNumber) {
     return this.requestGet('getClass', {
       code: code,
@@ -150,9 +150,9 @@ const API = {
     });
   },
 
-  // Õ›Ÿ «·ÿ·«»
+  // √ç√ù√ô √á√°√ò√°√á√à
   async saveStudents(code, classNumber, students) {
-    // ‰»⁄  «·ÿ·«» ﬂ‹ string „›’Ê· »‹ |
+    // √§√à√ö√ä √á√°√ò√°√á√à √ü√ú string √£√ù√ï√¶√° √à√ú |
     const studentsStr = students.join('|');
     return this.requestGet('saveStudents', {
       code: code,
@@ -161,7 +161,7 @@ const API = {
     });
   },
 
-  // Ã·» «·ÿ·«»
+  // √å√°√à √á√°√ò√°√á√à
   async getStudents(code, classNumber) {
     return this.requestGet('getStudents', {
       code: code,
@@ -169,7 +169,7 @@ const API = {
     });
   },
 
-  // Õ›Ÿ «·œ—Ã« 
+  // √ç√ù√ô √á√°√è√ë√å√á√ä
   async saveGrades(code, classNumber, grades) {
     const gradesStr = JSON.stringify(grades);
     return this.requestGet('saveGrades', {
@@ -179,7 +179,7 @@ const API = {
     });
   },
 
-  // Ã·» «·œ—Ã« 
+  // √å√°√à √á√°√è√ë√å√á√ä
   async getGrades(code, classNumber) {
     return this.requestGet('getGrades', {
       code: code,
@@ -187,7 +187,7 @@ const API = {
     });
   },
 
-  // Õ›Ÿ «·€Ì«»
+  // √ç√ù√ô √á√°√õ√≠√á√à
   async saveAttendance(code, classNumber, attendance) {
     const attStr = JSON.stringify(attendance);
     return this.requestGet('saveAttendance', {
@@ -197,7 +197,7 @@ const API = {
     });
   },
 
-  // Ã·» «·€Ì«»
+  // √å√°√à √á√°√õ√≠√á√à
   async getAttendance(code, classNumber) {
     return this.requestGet('getAttendance', {
       code: code,
