@@ -1,0 +1,727 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الأدمن - سجل رصد الدرجات</title>
+<style>
+  * {
+    font-family: 'Arial', 'Tahoma', 'Segoe UI', sans-serif !important;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: #eef2f7;
+    color: #333;
+    direction: rtl;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .admin-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+
+  .admin-header {
+    background: linear-gradient(135deg, #1a5276 0%, #0e3450 100%);
+    color: #fff; padding: 20px 25px; border-radius: 12px; margin-bottom: 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 15px;
+  }
+  .admin-header h1 { font-size: 20px; font-weight: 700; }
+  .admin-header .user-info { font-size: 14px; color: #d4af37; font-weight: 600; }
+
+  .btn-logout {
+    background: #c0392b; color: #fff; padding: 10px 20px;
+    border: none; border-radius: 8px; font-weight: 700;
+    cursor: pointer; font-size: 13px;
+  }
+  .btn-logout:hover { background: #a93226; }
+
+  /* تبويبات */
+  .tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    background: #fff;
+    padding: 8px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.3s;
+    min-width: 150px;
+  }
+  .tab-btn:hover { background: #f5f7fa; color: #1a5276; }
+  .tab-btn.active { background: #1a5276; color: #fff; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .cards-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px; margin-bottom: 25px;
+  }
+  .stat-card {
+    background: #fff; padding: 20px; border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-right: 4px solid #d4af37;
+  }
+  .stat-card .stat-number { font-size: 32px; font-weight: 800; color: #1a5276; margin-bottom: 4px; }
+  .stat-card .stat-label { font-size: 14px; color: #666; font-weight: 600; }
+
+  .panel {
+    background: #fff; border-radius: 12px; padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 20px;
+  }
+  .panel h2 {
+    color: #1a5276; font-size: 18px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 2px solid #d4af37;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+
+  .form-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px; margin-bottom: 20px;
+  }
+
+  .form-group { margin-bottom: 15px; }
+
+  .form-group label {
+    display: block; font-weight: 700; margin-bottom: 8px;
+    color: #1a5276; font-size: 14px;
+  }
+
+  .form-group input, .form-group select {
+    width: 100%; padding: 10px 12px;
+    border: 2px solid #ddd; border-radius: 8px;
+    font-size: 14px; background: #f9f9f9;
+    transition: all 0.3s;
+  }
+  .form-group input:focus, .form-group select:focus {
+    outline: none; border-color: #1a5276; background: #fff;
+    box-shadow: 0 0 0 4px rgba(26,82,118,0.1);
+  }
+
+  .form-group .hint {
+    display: block; margin-top: 6px;
+    font-size: 11px; color: #888;
+  }
+
+  .btn-create {
+    background: #27ae60; color: #fff; padding: 12px 30px;
+    border: none; border-radius: 8px; font-size: 15px;
+    font-weight: 700; cursor: pointer; transition: all 0.3s;
+  }
+  .btn-create:hover { background: #1e8449; transform: translateY(-2px); }
+
+  .btn-refresh {
+    background: #3498db; color: #fff; padding: 10px 20px;
+    border: none; border-radius: 8px; font-size: 13px;
+    font-weight: 700; cursor: pointer;
+  }
+  .btn-refresh:hover { background: #2980b9; }
+
+  table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  table th, table td {
+    padding: 10px 8px; text-align: right; border-bottom: 1px solid #eee;
+  }
+  table th {
+    background: #f5f7fa; color: #1a5276; font-weight: 700;
+    font-size: 12px; border-bottom: 2px solid #d4af37;
+  }
+  table tr:hover { background: #fafbfc; }
+
+  .code-badge {
+    display: inline-block; background: #1a5276; color: #d4af37;
+    padding: 5px 12px; border-radius: 6px; font-weight: 800;
+    font-size: 13px; letter-spacing: 2px;
+  }
+
+  .class-id-badge {
+    display: inline-block; background: #27ae60; color: #fff;
+    padding: 4px 10px; border-radius: 6px; font-weight: 700;
+    font-size: 12px; letter-spacing: 1px;
+  }
+
+  .grade-badge {
+    display: inline-block; background: #d4af37; color: #fff;
+    padding: 3px 10px; border-radius: 12px; font-weight: 700;
+    font-size: 12px;
+  }
+
+  .subject-badge {
+    display: inline-block; background: #9b59b6; color: #fff;
+    padding: 3px 10px; border-radius: 12px; font-weight: 700;
+    font-size: 12px;
+  }
+
+  .btn-delete {
+    background: #c0392b; color: #fff; padding: 6px 12px;
+    border: none; border-radius: 6px; font-size: 11px;
+    font-weight: 700; cursor: pointer;
+  }
+  .btn-delete:hover { background: #a93226; }
+
+  .empty-message { text-align: center; padding: 40px 20px; color: #999; font-size: 15px; }
+  .empty-message .icon { font-size: 48px; margin-bottom: 10px; display: block; }
+
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6); display: flex;
+    justify-content: center; align-items: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal {
+    background: #fff; border-radius: 16px; padding: 30px;
+    max-width: 500px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal h2 { color: #1a5276; margin-bottom: 20px; text-align: center; font-size: 20px; }
+  .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+
+  .btn-primary {
+    padding: 12px 24px; background: #1a5276; color: #fff;
+    border: none; border-radius: 8px; font-size: 14px;
+    font-weight: 700; cursor: pointer; flex: 1;
+  }
+  .btn-primary:hover { background: #0e3450; }
+
+  .code-display {
+    background: #f5f7fa; border: 2px dashed #1a5276;
+    border-radius: 12px; padding: 25px; text-align: center; margin: 20px 0;
+  }
+  .code-display .big-code {
+    font-size: 40px; font-weight: 800; color: #1a5276;
+    letter-spacing: 8px; margin-bottom: 10px;
+  }
+  .code-display .code-note { color: #666; font-size: 13px; }
+
+  .btn-copy {
+    background: #d4af37; color: #fff; padding: 10px 24px;
+    border: none; border-radius: 8px; font-size: 14px;
+    font-weight: 700; cursor: pointer; margin-top: 12px;
+  }
+  .btn-copy:hover { background: #b8952a; }
+
+  .message-box { margin-top: 15px; }
+
+  .msg {
+    padding: 12px 16px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; text-align: center;
+  }
+  .msg.info { background: #e3f2fd; color: #1976d2; border: 1px solid #90caf9; }
+  .msg.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .msg.error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+  .msg.warning { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+
+  @media (max-width: 600px) {
+    .admin-header h1 { font-size: 16px; }
+    .stat-card .stat-number { font-size: 24px; }
+    table { font-size: 11px; }
+    table th, table td { padding: 6px 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="admin-wrapper">
+
+  <div class="admin-header">
+    <div>
+      <h1>⚙️ لوحة تحكم الأدمن</h1>
+      <div class="user-info">إدارة المدرسين والفصول</div>
+    </div>
+    <button class="btn-logout" onclick="logout()">🚪 خروج</button>
+  </div>
+
+  <div class="cards-grid">
+    <div class="stat-card">
+      <div class="stat-number" id="totalTeachers">0</div>
+      <div class="stat-label">إجمالي المدرسين</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="totalClasses">0</div>
+      <div class="stat-label">إجمالي الفصول</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="totalGrades">0</div>
+      <div class="stat-label">الصفوف الدراسية</div>
+    </div>
+  </div>
+
+  <!-- تبويبات -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('teachers')">👨‍🏫 المدرسين</button>
+    <button class="tab-btn" onclick="switchTab('classes')">📚 الفصول</button>
+  </div>
+
+  <!-- تبويب المدرسين -->
+  <div id="tab-teachers" class="tab-content active">
+    <div class="panel">
+      <h2>➕ إضافة مدرس جديد</h2>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>اسم المدرس</label>
+          <input type="text" id="teacherName" placeholder="مثال: أحمد محمد علي">
+        </div>
+
+        <div class="form-group">
+          <label>المادة (افتراضية)</label>
+          <input type="text" id="subject" placeholder="مثال: رياضيات">
+          <small class="hint">يمكن للمدرس تغييرها لكل فصل</small>
+        </div>
+
+        <div class="form-group">
+          <label>تاريخ البداية</label>
+          <input type="date" id="startDate" value="2026-09-19">
+        </div>
+
+        <div class="form-group">
+          <label>تاريخ النهاية</label>
+          <input type="date" id="endDate" value="2027-01-02">
+        </div>
+
+        <div class="form-group">
+          <label>المديرية</label>
+          <input type="text" id="directorate">
+        </div>
+
+        <div class="form-group">
+          <label>الإدارة التعليمية</label>
+          <input type="text" id="administration">
+        </div>
+
+        <div class="form-group">
+          <label>المدرسة</label>
+          <input type="text" id="school" placeholder="اسم المدرسة">
+        </div>
+      </div>
+
+      <button class="btn-create" onclick="createTeacher()">🎯 إنشاء الكود</button>
+
+      <div id="createMessage" class="message-box"></div>
+    </div>
+
+    <div class="panel">
+      <h2>
+        <span>📋 قائمة المدرسين</span>
+        <button class="btn-refresh" onclick="loadTeachers()">🔄 تحديث</button>
+      </h2>
+
+      <div id="teachersList">
+        <div class="empty-message">
+          <span class="icon">⏳</span>
+          جاري التحميل...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- تبويب الفصول -->
+  <div id="tab-classes" class="tab-content">
+    <div class="panel">
+      <h2>➕ إضافة فصل جديد</h2>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>الصف الدراسي</label>
+          <select id="classGrade">
+            <option value="">-- اختر الصف --</option>
+            <option value="الأول الثانوي">الأول الثانوي</option>
+            <option value="الثاني الثانوي">الثاني الثانوي</option>
+            <option value="الثالث الثانوي">الثالث الثانوي</option>
+            <option value="الأول الإعدادي">الأول الإعدادي</option>
+            <option value="الثاني الإعدادي">الثاني الإعدادي</option>
+            <option value="الثالث الإعدادي">الثالث الإعدادي</option>
+            <option value="الأول الابتدائي">الأول الابتدائي</option>
+            <option value="الثاني الابتدائي">الثاني الابتدائي</option>
+            <option value="الثالث الابتدائي">الثالث الابتدائي</option>
+            <option value="الرابع الابتدائي">الرابع الابتدائي</option>
+            <option value="الخامس الابتدائي">الخامس الابتدائي</option>
+            <option value="السادس الابتدائي">السادس الابتدائي</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>رقم الفصل</label>
+          <input type="text" id="classNumber" placeholder="مثال: 1 أو 5 أو 36">
+        </div>
+
+        <div class="form-group">
+          <label>اسم الفصل</label>
+          <input type="text" id="className" placeholder="مثال: 1/1 أو 5/2">
+        </div>
+      </div>
+
+      <button class="btn-create" onclick="createClass()">📚 إضافة الفصل</button>
+
+      <div id="classCreateMessage" class="message-box"></div>
+    </div>
+
+    <div class="panel">
+      <h2>
+        <span>📋 قائمة الفصول</span>
+        <button class="btn-refresh" onclick="loadClasses()">🔄 تحديث</button>
+      </h2>
+
+      <div id="classesList">
+        <div class="empty-message">
+          <span class="icon">⏳</span>
+          جاري التحميل...
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- مودال الكود -->
+<div id="codeModal" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <h2 style="text-align:center; color:#27ae60;">✅ تم إنشاء الكود بنجاح</h2>
+
+    <div class="code-display">
+      <div class="big-code" id="newCode">------</div>
+      <div class="code-note">احتفظ بهذا الكود وأرسله للمدرس</div>
+      <button class="btn-copy" onclick="copyCode()">📋 نسخ الكود</button>
+    </div>
+
+    <div class="modal-buttons">
+      <button class="btn-primary" onclick="closeCodeModal()">تم</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+
+  const DEFAULT_DIRECTORATE = '\u0645\u062f\u064a\u0631\u064a\u0629 \u0627\u0644\u062a\u0631\u0628\u064a\u0629 \u0648\u0627\u0644\u062a\u0639\u0644\u064a\u0645 \u0628\u0627\u0644\u062c\u064a\u0632\u0629';
+  const DEFAULT_ADMINISTRATION = '\u0625\u062f\u0627\u0631\u0629 \u062c\u0646\u0648\u0628 \u0627\u0644\u062c\u064a\u0632\u0629';
+  const DEFAULT_SCHOOL = '\u0645\u062f\u0631\u0633\u0629 ................';
+
+  if (localStorage.getItem('is_admin') !== 'true') {
+    window.location.href = 'index.html';
+  }
+
+  let allClasses = [];
+
+  window.addEventListener('load', function() {
+    document.getElementById('directorate').value = DEFAULT_DIRECTORATE;
+    document.getElementById('administration').value = DEFAULT_ADMINISTRATION;
+    document.getElementById('school').value = DEFAULT_SCHOOL;
+    loadTeachers();
+    loadClasses();
+  });
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+    document.getElementById('tab-' + tab).classList.add('active');
+
+    const tabs = ['teachers', 'classes'];
+    const idx = tabs.indexOf(tab);
+    if (idx >= 0) {
+      document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+    }
+  }
+
+  function logout() {
+    if (confirm('هل تريد تسجيل الخروج؟')) {
+      localStorage.removeItem('is_admin');
+      window.location.href = 'index.html';
+    }
+  }
+
+  // ============================================================
+  // المدرسين
+  // ============================================================
+  async function createTeacher() {
+    const teacherName = document.getElementById('teacherName').value.trim();
+    const subject = document.getElementById('subject').value.trim();
+    const startDate = document.getElementById('startDate').value.trim();
+    const endDate = document.getElementById('endDate').value.trim();
+    const directorate = document.getElementById('directorate').value.trim();
+    const administration = document.getElementById('administration').value.trim();
+    const school = document.getElementById('school').value.trim();
+    const messageBox = document.getElementById('createMessage');
+
+    if (!teacherName) return showMessage(messageBox, '⚠️ يرجى إدخال اسم المدرس', 'warning');
+    if (!subject) return showMessage(messageBox, '⚠️ يرجى إدخال المادة', 'warning');
+
+    showMessage(messageBox, '⏳ جاري إنشاء الكود...', 'info');
+
+    try {
+      const result = await API.requestGet('addTeacher', {
+        teacherName: teacherName,
+        subject: subject,
+        classesCount: 0,
+        startDate: startDate,
+        endDate: endDate,
+        directorate: directorate,
+        administration: administration,
+        school: school
+      });
+
+      if (result && result.success) {
+        document.getElementById('newCode').textContent = result.code;
+        document.getElementById('codeModal').style.display = 'flex';
+        document.getElementById('teacherName').value = '';
+        document.getElementById('subject').value = '';
+        messageBox.innerHTML = '';
+        loadTeachers();
+      } else {
+        showMessage(messageBox, '❌ ' + (result.message || 'حدث خطأ'), 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      showMessage(messageBox, '❌ حدث خطأ في الاتصال', 'error');
+    }
+  }
+
+  function closeCodeModal() {
+    document.getElementById('codeModal').style.display = 'none';
+  }
+
+  function copyCode() {
+    const code = document.getElementById('newCode').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      alert('✅ تم نسخ الكود: ' + code);
+    }).catch(() => {
+      const temp = document.createElement('textarea');
+      temp.value = code;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      alert('✅ تم نسخ الكود: ' + code);
+    });
+  }
+
+  async function loadTeachers() {
+    const list = document.getElementById('teachersList');
+    list.innerHTML = '<div class="empty-message"><span class="icon">⏳</span>جاري التحميل...</div>';
+
+    try {
+      const result = await API.requestGet('getAllTeachers');
+
+      if (!result || !result.success || !result.teachers || result.teachers.length === 0) {
+        list.innerHTML = `
+          <div class="empty-message">
+            <span class="icon">📭</span>
+            لا يوجد مدرسين حتى الآن.
+          </div>
+        `;
+        document.getElementById('totalTeachers').textContent = '0';
+        return;
+      }
+
+      document.getElementById('totalTeachers').textContent = result.teachers.length;
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>اسم المدرس</th>
+              <th>المادة</th>
+              <th>الفترة</th>
+              <th>المديرية / الإدارة / المدرسة</th>
+              <th>الكود</th>
+              <th>إجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      result.teachers.forEach((t, idx) => {
+        const period = (t.startDate && t.endDate) 
+          ? t.startDate + '<br>' + t.endDate 
+          : '-';
+        const location = 
+          (t.directorate || '') + '<br>' +
+          '<small>' + (t.administration || '') + '</small><br>' +
+          '<small>' + (t.school || '') + '</small>';
+        
+        html += `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${t.name}</strong></td>
+            <td>${t.subject}</td>
+            <td style="font-size:11px;">${period}</td>
+            <td style="font-size:11px;">${location}</td>
+            <td><span class="code-badge">${t.code}</span></td>
+            <td>
+              <button class="btn-delete" onclick="deleteTeacher('${t.code}', '${t.name}')">🗑️ حذف</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table>';
+      list.innerHTML = html;
+
+    } catch (error) {
+      console.error(error);
+      list.innerHTML = '<div class="empty-message"><span class="icon">❌</span>حدث خطأ في التحميل</div>';
+    }
+  }
+
+  async function deleteTeacher(code, name) {
+    if (!confirm('هل أنت متأكد من حذف المدرس "' + name + '"؟\nالكود: ' + code)) return;
+
+    try {
+      const result = await API.requestGet('deleteTeacher', { code: code });
+      if (result && result.success) {
+        alert('✅ تم الحذف بنجاح');
+        loadTeachers();
+      } else {
+        alert('❌ ' + (result.message || 'حدث خطأ'));
+      }
+    } catch (error) {
+      console.error(error);
+      alert('❌ حدث خطأ في الاتصال');
+    }
+  }
+
+  // ============================================================
+  // الفصول
+  // ============================================================
+  async function createClass() {
+    const grade = document.getElementById('classGrade').value.trim();
+    const classNumber = document.getElementById('classNumber').value.trim();
+    const className = document.getElementById('className').value.trim();
+    const messageBox = document.getElementById('classCreateMessage');
+
+    if (!grade) return showMessage(messageBox, '⚠️ يرجى اختيار الصف', 'warning');
+    if (!classNumber) return showMessage(messageBox, '⚠️ يرجى إدخال رقم الفصل', 'warning');
+    if (!className) return showMessage(messageBox, '⚠️ يرجى إدخال اسم الفصل', 'warning');
+
+    showMessage(messageBox, '⏳ جاري إضافة الفصل...', 'info');
+
+    try {
+      const result = await API.requestGet('addAdminClass', {
+        classNumber: classNumber,
+        className: className,
+        grade: grade
+      });
+
+      if (result && result.success) {
+        showMessage(messageBox, '✅ تم إضافة الفصل بنجاح', 'success');
+        document.getElementById('classNumber').value = '';
+        document.getElementById('className').value = '';
+        loadClasses();
+      } else {
+        showMessage(messageBox, '❌ ' + (result.message || 'حدث خطأ'), 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      showMessage(messageBox, '❌ حدث خطأ في الاتصال', 'error');
+    }
+  }
+
+  async function loadClasses() {
+    const list = document.getElementById('classesList');
+    list.innerHTML = '<div class="empty-message"><span class="icon">⏳</span>جاري التحميل...</div>';
+
+    try {
+      const result = await API.requestGet('getAllAdminClasses');
+
+      if (!result || !result.success || !result.classes || result.classes.length === 0) {
+        list.innerHTML = `
+          <div class="empty-message">
+            <span class="icon">📭</span>
+            لا يوجد فصول حتى الآن. اضغط "إضافة الفصل" للبدء.
+          </div>
+        `;
+        document.getElementById('totalClasses').textContent = '0';
+        document.getElementById('totalGrades').textContent = '0';
+        return;
+      }
+
+      allClasses = result.classes;
+
+      document.getElementById('totalClasses').textContent = result.classes.length;
+      const uniqueGrades = new Set(result.classes.map(c => c.grade)).size;
+      document.getElementById('totalGrades').textContent = uniqueGrades;
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الصف</th>
+              <th>رقم الفصل</th>
+              <th>اسم الفصل</th>
+              <th>معرف الفصل</th>
+              <th>إجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      result.classes.forEach((c, idx) => {
+        html += `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><span class="grade-badge">${c.grade}</span></td>
+            <td><strong>${c.classNumber}</strong></td>
+            <td>${c.className}</td>
+            <td><span class="class-id-badge">${c.classId}</span></td>
+            <td>
+              <button class="btn-delete" onclick="deleteClass('${c.classId}', '${c.grade} - ${c.className}')">🗑️ حذف</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table>';
+      list.innerHTML = html;
+
+    } catch (error) {
+      console.error(error);
+      list.innerHTML = '<div class="empty-message"><span class="icon">❌</span>حدث خطأ في التحميل</div>';
+    }
+  }
+
+  async function deleteClass(classId, label) {
+    if (!confirm('هل أنت متأكد من حذف الفصل "' + label + '"؟')) return;
+
+    try {
+      const result = await API.requestGet('deleteAdminClass', { classId: classId });
+      if (result && result.success) {
+        alert('✅ تم الحذف بنجاح');
+        loadClasses();
+      } else {
+        alert('❌ ' + (result.message || 'حدث خطأ'));
+      }
+    } catch (error) {
+      console.error(error);
+      alert('❌ حدث خطأ في الاتصال');
+    }
+  }
+
+  function showMessage(container, text, type) {
+    container.innerHTML = '<div class="msg ' + type + '">' + text + '</div>';
+  }
+
+</script>
+
+</body>
+</html>

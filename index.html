@@ -1,0 +1,387 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سجل رصد الدرجات والغياب - تسجيل الدخول</title>
+<style>
+  * {
+    font-family: 'Arial', 'Tahoma', 'Segoe UI', sans-serif !important;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: #eef2f7;
+    color: #333;
+    direction: rtl;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .login-container {
+    max-width: 450px;
+    width: 100%;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+  }
+
+  .login-header {
+    background: linear-gradient(135deg, #1a5276 0%, #0e3450 100%);
+    padding: 30px 20px;
+    text-align: center;
+    color: #fff;
+  }
+
+  .login-header .logo { margin-bottom: 15px; }
+
+  .login-header h1 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .login-header .subtitle {
+    font-size: 13px;
+    color: #d4af37;
+    font-weight: 600;
+  }
+
+  .login-body { padding: 30px 25px; }
+
+  .form-group { margin-bottom: 20px; }
+
+  .form-group label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1a5276;
+    font-size: 14px;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s;
+    background: #f9f9f9;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #1a5276;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(26,82,118,0.1);
+  }
+
+  .form-group .hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #888;
+  }
+
+  button {
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #1a5276 0%, #0e3450 100%);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 16px;
+    margin-bottom: 15px;
+  }
+  .btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26,82,118,0.3);
+  }
+
+  .btn-admin {
+    width: 100%;
+    padding: 12px;
+    background: #fff;
+    color: #1a5276;
+    border: 2px solid #1a5276;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+  .btn-admin:hover { background: #1a5276; color: #fff; }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    color: #888;
+    font-size: 13px;
+  }
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #ddd;
+  }
+  .divider span { padding: 0 15px; font-weight: 600; }
+
+  .message-box { margin-top: 15px; }
+
+  .msg {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .msg.info { background: #e3f2fd; color: #1976d2; border: 1px solid #90caf9; }
+  .msg.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .msg.error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+  .msg.warning { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+
+  .login-footer {
+    text-align: center;
+    padding: 15px;
+    background: #f5f7fa;
+    color: #888;
+    font-size: 12px;
+    border-top: 1px solid #ddd;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal h2 {
+    color: #1a5276;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 20px;
+  }
+  .modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .modal-buttons button { flex: 1; }
+
+  .btn-primary {
+    padding: 12px 24px;
+    background: #1a5276;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .btn-primary:hover { background: #0e3450; }
+
+  .btn-secondary {
+    padding: 12px 24px;
+    background: #e0e0e0;
+    color: #333;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .btn-secondary:hover { background: #ccc; }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+
+  <div class="login-header">
+    <div class="logo">
+      <svg viewBox="0 0 100 100" width="80" height="80">
+        <circle cx="50" cy="50" r="48" fill="none" stroke="#d4af37" stroke-width="3"/>
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#d4af37" stroke-width="1"/>
+        <text x="50" y="35" text-anchor="middle" font-size="9" fill="#d4af37" font-weight="bold">MINISTRY OF</text>
+        <text x="50" y="45" text-anchor="middle" font-size="8" fill="#d4af37" font-weight="bold">EDUCATION</text>
+        <text x="50" y="62" text-anchor="middle" font-size="13" fill="#fff" font-weight="bold">وزارة</text>
+        <text x="50" y="76" text-anchor="middle" font-size="13" fill="#fff" font-weight="bold">التربية والتعليم</text>
+      </svg>
+    </div>
+    <h1>سجل رصد الدرجات والغياب</h1>
+    <p class="subtitle">العام الدراسي 2026 / 2027</p>
+  </div>
+
+  <div class="login-body">
+
+    <div class="form-group">
+      <label for="codeInput">كود المدرس</label>
+      <input
+        type="text"
+        id="codeInput"
+        placeholder="مثال: A7K9X2"
+        maxlength="10"
+        autocomplete="off"
+        style="text-transform: uppercase; letter-spacing: 3px; font-size: 20px; text-align: center; font-weight: bold;"
+      >
+      <small class="hint">أدخل الكود الذي حصلت عليه من إدارة المدرسة</small>
+    </div>
+
+    <button class="btn-login" onclick="handleTeacherLogin()">🚪 دخول</button>
+
+    <div class="divider"><span>أو</span></div>
+
+    <button class="btn-admin" onclick="handleAdminLogin()">⚙️ دخول الأدمن</button>
+
+    <div id="messageBox" class="message-box"></div>
+
+  </div>
+
+  <div class="login-footer">
+    <p>© 2026 - جميع الحقوق محفوظة</p>
+  </div>
+
+</div>
+
+<div id="adminModal" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <h2>دخول الأدمن</h2>
+    <div class="form-group">
+      <label>كلمة المرور</label>
+      <input type="password" id="adminPassword" placeholder="أدخل كلمة المرور">
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-primary" onclick="verifyAdminPassword()">دخول</button>
+      <button class="btn-secondary" onclick="closeAdminModal()">إلغاء</button>
+    </div>
+    <div id="adminMessage" class="message-box"></div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+  const ADMIN_PASSWORD_ENCODED = 'MDEwOTExNjQxMTRlbGtoZXI=';
+
+  function decodePassword(encoded) {
+    try { return atob(encoded); } catch (e) { return ''; }
+  }
+
+  async function handleTeacherLogin() {
+    const codeInput = document.getElementById('codeInput');
+    const code = codeInput.value.trim().toUpperCase();
+    const messageBox = document.getElementById('messageBox');
+
+    if (!code) {
+      showMessage('⚠️ يرجى إدخال الكود', 'warning');
+      return;
+    }
+
+    showMessage('⏳ جاري التحقق...', 'info');
+
+    try {
+      const result = await API.requestGet('verifyCode', { code: code });
+
+      if (result && result.success) {
+        localStorage.setItem('teacher_code', result.teacher.code);
+        localStorage.setItem('teacher_name', result.teacher.name);
+        localStorage.setItem('teacher_subject', result.teacher.subject);
+        localStorage.setItem('teacher_classes', result.teacher.classesCount);
+        localStorage.setItem('teacher_start_date', result.teacher.startDate || '2026-09-19');
+        localStorage.setItem('teacher_end_date', result.teacher.endDate || '2027-01-02');
+        localStorage.setItem('teacher_directorate', result.teacher.directorate || '');
+        localStorage.setItem('teacher_administration', result.teacher.administration || '');
+        localStorage.setItem('teacher_school', result.teacher.school || 'مدرسة ................');
+
+        showMessage('✅ تم التحقق! جاري الدخول...', 'success');
+
+        setTimeout(() => {
+          window.location.href = 'teacher.html';
+        }, 800);
+
+      } else {
+        showMessage('❌ ' + (result.message || 'الكود غير صحيح'), 'error');
+        codeInput.focus();
+      }
+    } catch (error) {
+      console.error(error);
+      showMessage('❌ حدث خطأ في الاتصال بالسيرفر', 'error');
+    }
+  }
+
+  function handleAdminLogin() {
+    document.getElementById('adminModal').style.display = 'flex';
+    document.getElementById('adminPassword').focus();
+  }
+
+  function closeAdminModal() {
+    document.getElementById('adminModal').style.display = 'none';
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('adminMessage').innerHTML = '';
+  }
+
+  function verifyAdminPassword() {
+    const password = document.getElementById('adminPassword').value;
+    const adminMessage = document.getElementById('adminMessage');
+    const correctPassword = decodePassword(ADMIN_PASSWORD_ENCODED);
+
+    if (password === correctPassword) {
+      localStorage.setItem('is_admin', 'true');
+      adminMessage.innerHTML = '<div class="msg success">✅ تم التحقق! جاري الدخول...</div>';
+      setTimeout(() => {
+        window.location.href = 'admin.html';
+      }, 600);
+    } else {
+      adminMessage.innerHTML = '<div class="msg error">❌ كلمة المرور غير صحيحة</div>';
+    }
+  }
+
+  function showMessage(text, type) {
+    const messageBox = document.getElementById('messageBox');
+    messageBox.innerHTML = '<div class="msg ' + type + '">' + text + '</div>';
+  }
+
+  document.getElementById('codeInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') handleTeacherLogin();
+  });
+
+  document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') verifyAdminPassword();
+  });
+
+  document.getElementById('codeInput').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+  });
+
+  window.addEventListener('load', async function() {
+    try {
+      const result = await API.requestGet('ping');
+      if (!result || !result.success) {
+        showMessage('⚠️ السيرفر لا يستجيب. تأكد من اتصال الإنترنت.', 'warning');
+      }
+    } catch (error) {
+      showMessage('⚠️ تعذر الاتصال بالسيرفر', 'warning');
+    }
+  });
+</script>
+
+</body>
+</html>

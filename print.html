@@ -1,0 +1,998 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>طباعة السجل</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+  * {
+    font-family: 'Arial', 'Tahoma', 'Segoe UI', sans-serif !important;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: #eef2f7;
+    padding: 20px;
+    direction: rtl;
+    font-size: 14px;
+  }
+
+  .print-controls {
+    background: #fff;
+    padding: 20px;
+    margin: 0 auto 20px;
+    max-width: 210mm;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .print-controls h1 {
+    color: #1a5276; font-size: 18px; font-weight: 700;
+    margin-bottom: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px;
+  }
+  .print-controls .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .btn-back { background: #95a5a6; color: #fff; }
+  .btn-back:hover { background: #7f8c8d; }
+
+  .btn-download {
+    background: #27ae60; color: #fff;
+    font-size: 15px; padding: 14px 32px;
+  }
+  .btn-download:hover { background: #1e8449; transform: translateY(-2px); }
+  .btn-download:disabled { background: #95a5a6; cursor: wait; transform: none; }
+
+  .classes-selector {
+    background: #f9f9f9;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+  }
+  .classes-selector h3 {
+    color: #1a5276;
+    font-size: 14px;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .classes-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+  }
+  .class-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .class-checkbox:hover {
+    border-color: #1a5276;
+    background: #f0f7ff;
+  }
+  .class-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  .class-checkbox label {
+    flex: 1;
+    cursor: pointer;
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+  }
+  .class-checkbox .subject-badge {
+    background: #9b59b6;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .select-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .btn-select-small {
+    padding: 6px 14px;
+    font-size: 12px;
+    background: #3498db;
+    color: #fff;
+  }
+  .btn-select-small:hover { background: #2980b9; }
+
+  .loading-box {
+    text-align: center; padding: 60px 20px;
+    color: #666; font-size: 16px;
+    background: #fff; margin: 0 auto;
+    max-width: 210mm; border-radius: 12px;
+  }
+
+  .status-box {
+    text-align: center; padding: 15px; margin: 15px auto;
+    max-width: 210mm; background: #fff3cd;
+    border: 2px solid #ffc107; border-radius: 8px;
+    color: #856404; font-weight: 700; display: none;
+  }
+  .status-box.show { display: block; }
+  .status-box.success { background: #d4edda; border-color: #28a745; color: #155724; }
+  .status-box.error { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+
+  #printArea { display: block; }
+
+  .page {
+    width: 210mm;
+    height: 297mm;
+    padding: 4mm;
+    margin: 0 auto 20px;
+    background: #fff;
+    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  .cover-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20mm 15mm;
+  }
+  .cover-header { text-align: center; margin-bottom: 15mm; }
+  .cover-header .logo {
+    width: 100px; height: 100px;
+    margin: 0 auto 10mm; display: block;
+  }
+  .cover-header .country {
+    font-size: 20px; font-weight: 800;
+    color: #1a5276; margin-bottom: 4mm;
+  }
+  .cover-header .ministry {
+    font-size: 18px; font-weight: 700;
+    color: #1a5276; margin-bottom: 3mm;
+  }
+  .cover-header .directorate {
+    font-size: 16px; font-weight: 600;
+    color: #333; margin-bottom: 2mm;
+  }
+  .cover-body {
+    flex: 1; display: flex;
+    flex-direction: column; justify-content: center;
+  }
+  .cover-title {
+    font-size: 28px; font-weight: 800;
+    color: #1a5276; text-align: center;
+    margin-bottom: 10mm; padding: 8mm;
+    border-top: 4px solid #d4af37;
+    border-bottom: 4px solid #d4af37;
+    background: #faf8f0;
+  }
+  .cover-subtitle {
+    font-size: 16px; font-weight: 600;
+    color: #c0392b; text-align: center;
+    margin-bottom: 15mm;
+  }
+  .cover-info {
+    background: #f9f9f9;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 10mm; margin-bottom: 10mm;
+  }
+  .cover-info table { width: 100%; border-collapse: collapse; }
+  .cover-info table td {
+    padding: 4mm 3mm;
+    border-bottom: 1px solid #eee;
+    font-size: 15px;
+  }
+  .cover-info table td:first-child {
+    font-weight: 700; color: #1a5276; width: 40%;
+  }
+  .cover-info table td:last-child {
+    color: #333; font-weight: 600;
+  }
+  .cover-footer {
+    text-align: center; font-size: 14px;
+    color: #666; padding-top: 10mm;
+    border-top: 2px solid #d4af37;
+  }
+
+  .approval-page { padding: 20mm 15mm; }
+  .approval-title {
+    font-size: 22px; font-weight: 800;
+    color: #1a5276; text-align: center;
+    margin-bottom: 15mm; padding-bottom: 5mm;
+    border-bottom: 3px solid #d4af37;
+  }
+  .approval-text {
+    font-size: 15px; line-height: 2.2;
+    color: #333; text-align: justify;
+    margin-bottom: 15mm;
+  }
+  .approval-table {
+    width: 100%; border-collapse: collapse; margin-top: 10mm;
+  }
+  .approval-table th,
+  .approval-table td {
+    border: 1px solid #333;
+    padding: 5mm 3mm;
+    text-align: center; font-size: 14px;
+  }
+  .approval-table th {
+    background: #1a5276; color: #fff; font-weight: 700;
+  }
+  .approval-table td { height: 15mm; }
+  .approval-signatures {
+    display: flex; justify-content: space-between;
+    margin-top: 20mm; padding-top: 8mm;
+    border-top: 2px solid #999;
+  }
+  .approval-signatures .sig-item {
+    text-align: center; font-weight: 700;
+    color: #1a5276; font-size: 14px;
+  }
+
+  .record-header {
+    text-align: center;
+    margin-bottom: 2mm;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid #d4af37;
+  }
+  .record-header .header-top {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 2mm; font-size: 9px;
+  }
+  .record-header .header-top .right-info {
+    text-align: right; line-height: 1.6;
+    color: #1a5276; font-weight: 700; flex: 1;
+  }
+  .record-header .header-top .center-logo {
+    flex: 0 0 20mm; text-align: center;
+  }
+  .record-header .header-top .center-logo img {
+    width: 16mm; height: 16mm;
+  }
+  .record-header .header-top .left-info {
+    text-align: left; line-height: 1.6;
+    color: #1a5276; font-weight: 700; flex: 1;
+  }
+  .record-header .record-title {
+    font-size: 13px; font-weight: 800;
+    color: #1a5276; text-align: center;
+    padding: 1mm; background: #faf8f0;
+  }
+  .record-header .record-title .subject {
+    color: #c0392b; font-size: 12px;
+  }
+  .record-header .teacher-line {
+    font-size: 10px; font-weight: 700;
+    color: #1a5276; margin-top: 1mm;
+  }
+
+  .grades-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 7px; table-layout: fixed;
+    margin-top: 1mm;
+  }
+  .grades-table td {
+    border: 1px solid #333;
+    text-align: center; padding: 0;
+    vertical-align: middle; overflow: hidden;
+  }
+  .grades-table td.label-cell {
+    background: #f0f0f0; font-weight: 700;
+    font-size: 7px; color: #1a5276; height: 4mm;
+  }
+  .grades-table td.week-header {
+    background: #e8e8e8; font-weight: 700;
+    font-size: 6px; color: #1a5276;
+    line-height: 1.15; height: 4.5mm;
+  }
+  .grades-table td.sub-header {
+    background: #f5f5f5; font-weight: 600;
+    font-size: 5.5px; color: #1a5276;
+    line-height: 1.15; height: 3.5mm;
+  }
+  .grades-table td.max-header {
+    background: #d4af37; color: #fff;
+    font-weight: 700; font-size: 6px; height: 3.5mm;
+  }
+  .grades-table td.name-cell {
+    text-align: right; padding: 0 3px;
+    font-size: 8px; font-weight: 600;
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; height: 4.5mm;
+  }
+  .grades-table td.num-cell {
+    width: 5mm; font-weight: 700;
+    background: #f9f9f9; font-size: 7.5px; height: 4.5mm;
+  }
+  .grades-table td.grade-cell {
+    height: 4.5mm; width: 6.5mm;
+  }
+
+  .page-footer {
+    display: flex; justify-content: space-between;
+    margin-top: 2mm; padding-top: 1.5mm;
+    border-top: 1px solid #999;
+    font-size: 9px; font-weight: 700; color: #1a5276;
+  }
+  .page-footer .footer-teacher { color: #c0392b; }
+
+  .total-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 8px; table-layout: fixed; margin-top: 1mm;
+  }
+  .total-table td {
+    border: 1px solid #333;
+    text-align: center; padding: 0;
+    vertical-align: middle; overflow: hidden;
+  }
+  .total-table td.label-cell {
+    background: #f0f0f0; font-weight: 700;
+    font-size: 7px; color: #1a5276; height: 4mm;
+  }
+  .total-table td.group-header {
+    background: #e8e8e8; font-weight: 700;
+    font-size: 7px; color: #1a5276; height: 5mm;
+  }
+  .total-table td.max-header {
+    background: #d4af37; color: #fff;
+    font-weight: 700; font-size: 7px; height: 4mm;
+  }
+  .total-table td.name-cell {
+    text-align: right; padding: 0 3px;
+    font-size: 8px; font-weight: 600;
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; height: 4.5mm;
+  }
+  .total-table td.num-cell {
+    width: 5mm; font-weight: 700;
+    background: #f9f9f9; font-size: 7.5px; height: 4.5mm;
+  }
+  .total-table td.grade-cell {
+    height: 4.5mm; width: 8mm;
+  }
+
+  @media print {
+    @page { size: A4 portrait; margin: 4mm; }
+    body { background: #fff; padding: 0; margin: 0; }
+    .print-controls { display: none !important; }
+    .status-box { display: none !important; }
+    #printArea { display: block !important; }
+    .page {
+      width: 100%; height: auto; min-height: auto;
+      padding: 0; margin: 0; box-shadow: none;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+  <h1>
+    <span>🖨️ معاينة السجل</span>
+    <div class="btns">
+      <button class="btn-back" onclick="goBack()">⬅️ رجوع</button>
+      <button class="btn-download" id="downloadBtn" onclick="downloadPDF()">📥 تحميل PDF</button>
+    </div>
+  </h1>
+
+  <div class="classes-selector" id="classesSelector" style="display:none;">
+    <h3>📚 اختر الفصول للطباعة:</h3>
+    <div class="classes-checkboxes" id="classesCheckboxes"></div>
+    <div class="select-actions">
+      <button class="btn-select-small" onclick="selectAll()">✅ تحديد الكل</button>
+      <button class="btn-select-small" onclick="deselectAll()">❌ إلغاء التحديد</button>
+    </div>
+  </div>
+</div>
+
+<div class="status-box" id="statusBox"></div>
+
+<div id="printArea">
+  <div class="loading-box">⏳ جاري تحميل البيانات...</div>
+</div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyC-xIxjIoR7K7WQs_5PnG33_dHpPVsDzRGhAnM5I0Ca4qE1qBX9MIv35eNrQZ1SU0V/exec';
+
+  const TEACHER_CODE = localStorage.getItem('teacher_code');
+  const TEACHER_NAME = localStorage.getItem('teacher_name');
+  const TEACHER_START_DATE = localStorage.getItem('teacher_start_date') || '2026-09-19';
+  const TEACHER_END_DATE = localStorage.getItem('teacher_end_date') || '2027-01-02';
+  const TEACHER_DIRECTORATE = localStorage.getItem('teacher_directorate') || '';
+  const TEACHER_ADMINISTRATION = localStorage.getItem('teacher_administration') || '';
+  const TEACHER_SCHOOL = localStorage.getItem('teacher_school') || '';
+
+  if (!TEACHER_CODE) {
+    window.location.href = 'index.html';
+  }
+
+  const STUDENTS_PER_PAGE = 50;
+  const WEEKS_PER_PAGE = 4;
+
+  const GRADE_COLUMNS = [
+    { label: 'تقييم أسبوعي', max: 15 },
+    { label: 'الواجب', max: 15 },
+    { label: 'الاختبار القصير', max: 10 },
+    { label: 'المجموع', max: 40 }
+  ];
+
+  const ATTENDANCE_COLUMNS = [
+    { label: 'ح', max: '' },
+    { label: 'غ', max: '' },
+    { label: 'ت', max: '' },
+    { label: 'إذن', max: '' }
+  ];
+
+  const FINAL_TOTAL_COLUMNS = [
+    { label: 'موسوعة الفصل الأول', max: 40 },
+    { label: 'اختبارات الفصول', max: 30 },
+    { label: 'المجموع النهائي', max: 70 }
+  ];
+
+  const LOGO_SVG = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+    '<circle cx="50" cy="50" r="48" fill="#fff" stroke="#d4af37" stroke-width="3"/>' +
+    '<circle cx="50" cy="50" r="42" fill="none" stroke="#d4af37" stroke-width="1"/>' +
+    '<path d="M 30 35 L 70 35 L 70 45 L 30 45 Z" fill="#1a5276"/>' +
+    '<path d="M 30 50 L 70 50 L 70 60 L 30 60 Z" fill="#c0392b"/>' +
+    '<path d="M 30 65 L 70 65 L 70 75 L 30 75 Z" fill="#1a5276"/>' +
+    '</svg>'
+  );
+
+  let allClasses = [];
+
+  async function apiGet(action, params) {
+    params = params || {};
+    try {
+      const queryParams = new URLSearchParams(Object.assign({ action: action }, params));
+      const url = API_URL + '?' + queryParams.toString();
+      const response = await fetch(url, { method: 'GET', redirect: 'follow' });
+      return await response.json();
+    } catch (error) {
+      console.error('API Error:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  function calculateWeeks(startDate, endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const weeks = [];
+    
+    const weekNames = [
+      'الأسبوع الأول', 'الأسبوع الثاني', 'الأسبوع الثالث', 'الأسبوع الرابع',
+      'الأسبوع الخامس', 'الأسبوع السادس', 'الأسبوع السابع', 'الأسبوع الثامن',
+      'الأسبوع التاسع', 'الأسبوع العاشر', 'الأسبوع الحادي عشر', 'الأسبوع الثاني عشر',
+      'الأسبوع الثالث عشر', 'الأسبوع الرابع عشر', 'الأسبوع الخامس عشر', 'الأسبوع السادس عشر',
+      'الأسبوع السابع عشر', 'الأسبوع الثامن عشر', 'الأسبوع التاسع عشر', 'الأسبوع العشرون'
+    ];
+    
+    let current = new Date(start);
+    let index = 0;
+    
+    while (current <= end && index < 20) {
+      const y = current.getFullYear();
+      const m = current.getMonth() + 1;
+      const d = current.getDate();
+      const dateStr = y + '/' + m + '/' + d;
+      
+      weeks.push({
+        name: weekNames[index] || ('الأسبوع ' + (index + 1)),
+        date: dateStr
+      });
+      
+      current.setDate(current.getDate() + 7);
+      index++;
+    }
+    
+    return weeks;
+  }
+
+  function groupWeeks(weeks, size) {
+    size = size || 4;
+    const groups = [];
+    for (let i = 0; i < weeks.length; i += size) {
+      groups.push(weeks.slice(i, i + size));
+    }
+    return groups;
+  }
+
+  async function loadClasses() {
+    const printArea = document.getElementById('printArea');
+    printArea.innerHTML = '<div class="loading-box">⏳ جاري تحميل الفصول...</div>';
+
+    try {
+      const result = await apiGet('getTeacherClasses', { code: TEACHER_CODE });
+
+      if (result && result.success && result.classes && result.classes.length > 0) {
+        allClasses = result.classes;
+        renderClassSelector();
+      } else {
+        printArea.innerHTML = '<div class="loading-box">📭 لا يوجد فصول. أضف فصول من صفحة المدرس.</div>';
+      }
+    } catch (error) {
+      console.error(error);
+      printArea.innerHTML = '<div class="loading-box">❌ حدث خطأ في تحميل الفصول</div>';
+    }
+  }
+
+  function renderClassSelector() {
+    const selector = document.getElementById('classesSelector');
+    const checkboxes = document.getElementById('classesCheckboxes');
+
+    let html = '';
+    allClasses.forEach(function(c, idx) {
+      html += '<div class="class-checkbox">';
+      html += '<input type="checkbox" id="class_cb_' + idx + '" value="' + c.classId + '" checked>';
+      html += '<label for="class_cb_' + idx + '">' + escapeHTML(c.grade) + ' - ' + escapeHTML(c.className) + '</label>';
+      html += '<span class="subject-badge">' + escapeHTML(c.subject || '') + '</span>';
+      html += '</div>';
+    });
+
+    checkboxes.innerHTML = html;
+    selector.style.display = 'block';
+
+    checkboxes.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
+      cb.addEventListener('change', buildPrintArea);
+    });
+
+    buildPrintArea();
+  }
+
+  function selectAll() {
+    document.querySelectorAll('#classesCheckboxes input[type="checkbox"]').forEach(function(cb) {
+      cb.checked = true;
+    });
+    buildPrintArea();
+  }
+
+  function deselectAll() {
+    document.querySelectorAll('#classesCheckboxes input[type="checkbox"]').forEach(function(cb) {
+      cb.checked = false;
+    });
+    buildPrintArea();
+  }
+
+  function getSelectedClasses() {
+    const selected = [];
+    document.querySelectorAll('#classesCheckboxes input[type="checkbox"]:checked').forEach(function(cb) {
+      const classId = cb.value;
+      const cls = allClasses.find(c => String(c.classId) === String(classId));
+      if (cls) selected.push(cls);
+    });
+    return selected;
+  }
+
+  async function buildPrintArea() {
+    const printArea = document.getElementById('printArea');
+    const selectedClasses = getSelectedClasses();
+
+    if (selectedClasses.length === 0) {
+      printArea.innerHTML = '<div class="loading-box">⚠️ لم يتم اختيار أي فصل.</div>';
+      return;
+    }
+
+    printArea.innerHTML = '<div class="loading-box">⏳ جاري تحميل البيانات...</div>';
+
+    try {
+      const allWeeks = calculateWeeks(TEACHER_START_DATE, TEACHER_END_DATE);
+      const weekGroups = groupWeeks(allWeeks, WEEKS_PER_PAGE);
+
+      const fullClassesData = [];
+      for (let i = 0; i < selectedClasses.length; i++) {
+        const cls = selectedClasses[i];
+        const studentsResult = await apiGet('getStudentsByClassId', {
+          classId: cls.classId
+        });
+        const students = (studentsResult && studentsResult.success && studentsResult.students) ? studentsResult.students : [];
+
+        fullClassesData.push({
+          classId: cls.classId,
+          classNumber: cls.classNumber,
+          className: cls.className,
+          subject: cls.subject,
+          grade: cls.grade,
+          students: students.map(function(s) { return s.studentName; })
+        });
+      }
+
+      let html = '';
+      html += createCoverPage(fullClassesData);
+      html += createApprovalPage();
+
+      fullClassesData.forEach(function(cd) {
+        weekGroups.forEach(function(group, idx) {
+          html += createGradesPage(cd, group, idx + 1);
+        });
+        html += createTotalPage(cd);
+        weekGroups.forEach(function(group, idx) {
+          html += createAttendancePage(cd, group, idx + 1);
+        });
+      });
+
+      printArea.innerHTML = html;
+
+    } catch (error) {
+      console.error(error);
+      printArea.innerHTML = '<div class="loading-box">❌ حدث خطأ: ' + error.message + '</div>';
+    }
+  }
+
+  function createCoverPage(classesData) {
+    return `
+      <div class="page cover-page">
+        <div class="cover-header">
+          <img class="logo" src="${LOGO_SVG}" alt="logo">
+          <div class="country">جمهورية مصر العربية</div>
+          <div class="ministry">وزارة التربية والتعليم والتعليم الفني</div>
+          <div class="directorate">${escapeHTML(TEACHER_DIRECTORATE)}</div>
+          <div class="directorate">${escapeHTML(TEACHER_ADMINISTRATION)}</div>
+          <div class="directorate">${escapeHTML(TEACHER_SCHOOL)}</div>
+        </div>
+
+        <div class="cover-body">
+          <div class="cover-title">سجل التقييم</div>
+          <div class="cover-subtitle">طبقاً للقرار الوزاري رقم (234) لسنة 2025</div>
+
+          <div class="cover-info">
+            <table>
+              <tr><td>اسم المعلم</td><td>${escapeHTML(TEACHER_NAME)}</td></tr>
+              <tr><td>عدد الفصول</td><td>${classesData.length} فصول</td></tr>
+              <tr><td>الفترة</td><td>${escapeHTML(TEACHER_START_DATE)} → ${escapeHTML(TEACHER_END_DATE)}</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="cover-footer">للعام الدراسي 2026 / 2027</div>
+      </div>
+    `;
+  }
+
+  function createApprovalPage() {
+    return `
+      <div class="page approval-page">
+        <div class="approval-title">محضر اعتماد السجل</div>
+
+        <div class="approval-text">
+          إنه في يوم ................................ الموافق ................ / ................ / 2026،
+          وبمعرفة اللجنة المشكلة لهذا الغرض، تم اعتماد هذا السجل للعام الدراسي 2026 / 2027،
+          وذلك بعد التأكد من صلاحيته وجاهزته للعمل به من تاريخه.
+          <br><br>
+          ويبدأ العمل به من صفحة رقم (1) وينتهي العمل به في صفحة رقم (.....)،
+          وقد تم ترقيمه وختمه بخاتم المدرسة.
+        </div>
+
+        <table class="approval-table">
+          <thead>
+            <tr><th>م</th><th>الاسم</th><th>الوظيفة</th><th>التوقيع</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td></td><td></td><td></td></tr>
+            <tr><td>2</td><td></td><td></td><td></td></tr>
+            <tr><td>3</td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+
+        <div class="approval-signatures">
+          <div class="sig-item">معلم المادة<br><br>_________________</div>
+          <div class="sig-item">موجه المادة<br><br>_________________</div>
+          <div class="sig-item">مدير المدرسة<br><br>_________________</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function createGradesPage(classData, weeksGroup, pageNum) {
+    const subject = classData.subject || '';
+    const className = classData.className || '';
+    const grade = classData.grade || '';
+    const students = classData.students;
+
+    let headerHTML = '<div class="record-header">';
+    headerHTML += '<div class="header-top">';
+    headerHTML += '<div class="right-info">';
+    headerHTML += '<div>' + escapeHTML(TEACHER_DIRECTORATE) + '</div>';
+    headerHTML += '<div>' + escapeHTML(TEACHER_ADMINISTRATION) + '</div>';
+    headerHTML += '<div>' + escapeHTML(TEACHER_SCHOOL) + '</div>';
+    headerHTML += '</div>';
+    headerHTML += '<div class="center-logo"><img src="' + LOGO_SVG + '" alt="logo"></div>';
+    headerHTML += '<div class="left-info">';
+    headerHTML += '<div>الصف: ' + escapeHTML(grade) + '</div>';
+    headerHTML += '<div>الفصل: ' + escapeHTML(className) + '</div>';
+    headerHTML += '<div>صفحة: ' + pageNum + '</div>';
+    headerHTML += '</div>';
+    headerHTML += '</div>';
+    headerHTML += '<div class="record-title">';
+    headerHTML += 'سجل رصد درجات فصل : <span class="subject">' + escapeHTML(subject) + '</span>';
+    headerHTML += '<div class="teacher-line">المدرس : ' + escapeHTML(TEACHER_NAME) + '</div>';
+    headerHTML += '</div>';
+    headerHTML += '</div>';
+
+    let tableRows = '';
+
+    tableRows += '<tr>';
+    tableRows += '<td rowspan="3" class="label-cell" style="width:5mm;">م</td>';
+    tableRows += '<td rowspan="3" class="label-cell" style="width:45mm;">الاسم</td>';
+    weeksGroup.forEach(function(w) {
+      tableRows += '<td colspan="4" class="week-header">' + w.name + '<br>' + w.date + '</td>';
+    });
+    tableRows += '</tr>';
+
+    tableRows += '<tr>';
+    weeksGroup.forEach(function() {
+      GRADE_COLUMNS.forEach(function(col) {
+        tableRows += '<td class="sub-header">' + col.label + '</td>';
+      });
+    });
+    tableRows += '</tr>';
+
+    tableRows += '<tr>';
+    weeksGroup.forEach(function() {
+      GRADE_COLUMNS.forEach(function(col) {
+        tableRows += '<td class="max-header">' + col.max + '</td>';
+      });
+    });
+    tableRows += '</tr>';
+
+    for (let i = 0; i < STUDENTS_PER_PAGE; i++) {
+      const studentName = students[i] || '';
+      tableRows += '<tr>';
+      tableRows += '<td class="num-cell">' + (i + 1) + '</td>';
+      tableRows += '<td class="name-cell">' + escapeHTML(studentName) + '</td>';
+      for (let j = 0; j < 16; j++) {
+        tableRows += '<td class="grade-cell"></td>';
+      }
+      tableRows += '</tr>';
+    }
+
+    let footerHTML = '<div class="page-footer">';
+    footerHTML += '<div class="footer-teacher">معلم المادة: ' + escapeHTML(TEACHER_NAME) + '</div>';
+    footerHTML += '<div>موجه المادة</div>';
+    footerHTML += '<div>مدير المدرسة</div>';
+    footerHTML += '</div>';
+
+    return '<div class="page">' + headerHTML + '<table class="grades-table"><tbody>' + tableRows + '</tbody></table>' + footerHTML + '</div>';
+  }
+
+  function createAttendancePage(classData, weeksGroup, pageNum) {
+    const subject = classData.subject || '';
+    const className = classData.className || '';
+    const grade = classData.grade || '';
+    const students = classData.students;
+
+    let headerHTML = '<div class="record-header">';
+    headerHTML += '<div class="header-top">';
+    headerHTML += '<div class="right-info">';
+    headerHTML += '<div>' + escapeHTML(TEACHER_DIRECTORATE) + '</div>';
+    headerHTML += '<div>' + escapeHTML(TEACHER_ADMINISTRATION) + '</div>';
+    headerHTML += '<div>' + escapeHTML(TEACHER_SCHOOL) + '</div>';
+    headerHTML += '</div>';
+    headerHTML += '<div class="center-logo"><img src="' + LOGO_SVG + '" alt="logo"></div>';
+    headerHTML += '<div class="left-info">';
+    headerHTML += '<div>الصف: ' + escapeHTML(grade) + '</div>';
+    headerHTML += '<div>الفصل: ' + escapeHTML(className) + '</div>';
+    headerHTML += '<div>صفحة: ' + pageNum + '</div>';
+    headerHTML += '</div>';
+    headerHTML += '</div>';
+    headerHTML += '<div class="record-title">';
+    headerHTML += 'سجل رصد غياب فصل : <span class="subject">' + escapeHTML(subject) + '</span>';
+    headerHTML += '<div class="teacher-line">المدرس : ' + escapeHTML(TEACHER_NAME) + '</div>';
+    headerHTML += '</div>';
+    headerHTML += '</div>';
+
+    let tableRows = '';
+
+    tableRows += '<tr>';
+    tableRows += '<td rowspan="2" class="label-cell" style="width:5mm;">م</td>';
+    tableRows += '<td rowspan="2" class="label-cell" style="width:45mm;">الاسم</td>';
+    weeksGroup.forEach(function(w) {
+      tableRows += '<td colspan="4" class="week-header">' + w.name + '<br>' + w.date + '</td>';
+    });
+    tableRows += '</tr>';
+
+    tableRows += '<tr>';
+    weeksGroup.forEach(function() {
+      ATTENDANCE_COLUMNS.forEach(function(col) {
+        tableRows += '<td class="sub-header">' + col.label + '</td>';
+      });
+    });
+    tableRows += '</tr>';
+
+    for (let i = 0; i < STUDENTS_PER_PAGE; i++) {
+      const studentName = students[i] || '';
+      tableRows += '<tr>';
+      tableRows += '<td class="num-cell">' + (i + 1) + '</td>';
+      tableRows += '<td class="name-cell">' + escapeHTML(studentName) + '</td>';
+      for (let j = 0; j < 16; j++) {
+        tableRows += '<td class="grade-cell"></td>';
+      }
+      tableRows += '</tr>';
+    }
+
+    let footerHTML = '<div class="page-footer">';
+    footerHTML += '<div class="footer-teacher">معلم المادة: ' + escapeHTML(TEACHER_NAME) + '</div>';
+    footerHTML += '<div>موجه المادة</div>';
+    footerHTML += '<div>مدير المدرسة</div>';
+    footerHTML += '</div>';
+
+    return '<div class="page">' + headerHTML + '<table class="grades-table"><tbody>' + tableRows + '</tbody></table>' + footerHTML + '</div>';
+  }
+
+  function createTotalPage(classData) {
+    const subject = classData.subject || '';
+    const className = classData.className || '';
+    const grade = classData.grade || '';
+    const students = classData.students;
+
+    let headerHTML = '<div class="record-header">';
+    headerHTML += '<div class="header-top">';
+    headerHTML += '<div class="right-info">';
+    headerHTML += '<div>' + escapeHTML(TEACHER_DIRECTORATE) + '</div>';
+    headerHTML += '<div>' + escapeHTML(TEACHER_ADMINISTRATION) + '</div>';
+    headerHTML += '<div>' + escapeHTML(TEACHER_SCHOOL) + '</div>';
+    headerHTML += '</div>';
+    headerHTML += '<div class="center-logo"><img src="' + LOGO_SVG + '" alt="logo"></div>';
+    headerHTML += '<div class="left-info">';
+    headerHTML += '<div>الصف: ' + escapeHTML(grade) + '</div>';
+    headerHTML += '<div>الفصل: ' + escapeHTML(className) + '</div>';
+    headerHTML += '<div>صفحة: نهائي</div>';
+    headerHTML += '</div>';
+    headerHTML += '</div>';
+    headerHTML += '<div class="record-title">';
+    headerHTML += 'المجموع النهائي : <span class="subject">' + escapeHTML(subject) + '</span>';
+    headerHTML += '<div class="teacher-line">المدرس : ' + escapeHTML(TEACHER_NAME) + '</div>';
+    headerHTML += '</div>';
+    headerHTML += '</div>';
+
+    let tableRows = '';
+
+    tableRows += '<tr>';
+    tableRows += '<td rowspan="2" class="label-cell" style="width:5mm;">م</td>';
+    tableRows += '<td rowspan="2" class="label-cell" style="width:45mm;">الاسم</td>';
+    FINAL_TOTAL_COLUMNS.forEach(function(col) {
+      tableRows += '<td class="group-header">' + col.label + '</td>';
+    });
+    tableRows += '</tr>';
+
+    tableRows += '<tr>';
+    FINAL_TOTAL_COLUMNS.forEach(function(col) {
+      tableRows += '<td class="max-header">' + col.max + '</td>';
+    });
+    tableRows += '</tr>';
+
+    for (let i = 0; i < STUDENTS_PER_PAGE; i++) {
+      const studentName = students[i] || '';
+      tableRows += '<tr>';
+      tableRows += '<td class="num-cell">' + (i + 1) + '</td>';
+      tableRows += '<td class="name-cell">' + escapeHTML(studentName) + '</td>';
+      for (let j = 0; j < 3; j++) {
+        tableRows += '<td class="grade-cell"></td>';
+      }
+      tableRows += '</tr>';
+    }
+
+    let footerHTML = '<div class="page-footer">';
+    footerHTML += '<div class="footer-teacher">معلم المادة: ' + escapeHTML(TEACHER_NAME) + '</div>';
+    footerHTML += '<div>موجه المادة</div>';
+    footerHTML += '<div>مدير المدرسة</div>';
+    footerHTML += '</div>';
+
+    return '<div class="page">' + headerHTML + '<table class="total-table"><tbody>' + tableRows + '</tbody></table>' + footerHTML + '</div>';
+  }
+
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  async function downloadPDF() {
+    const btn = document.getElementById('downloadBtn');
+    const statusBox = document.getElementById('statusBox');
+    const printArea = document.getElementById('printArea');
+
+    if (!printArea.querySelector('.page')) {
+      alert('⚠️ لا يوجد محتوى');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ جاري التحويل...';
+    statusBox.className = 'status-box show';
+    statusBox.textContent = '⏳ جاري إنشاء PDF...';
+
+    try {
+      const pages = printArea.querySelectorAll('.page');
+      const jsPDF = window.jspdf.jsPDF;
+      let pdf = null;
+
+      for (let i = 0; i < pages.length; i++) {
+        statusBox.textContent = '⏳ الصفحة ' + (i + 1) + ' من ' + pages.length;
+
+        const canvas = await html2canvas(pages[i], {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+
+        if (i === 0) {
+          pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+          pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+        } else {
+          pdf.addPage();
+          pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+        }
+      }
+
+      const filename = 'سجل_' + TEACHER_NAME + '.pdf';
+      pdf.save(filename);
+
+      statusBox.className = 'status-box show success';
+      statusBox.textContent = '✅ تم تحميل PDF بنجاح!';
+
+      setTimeout(function() {
+        statusBox.className = 'status-box';
+      }, 5000);
+
+    } catch (error) {
+      console.error(error);
+      statusBox.className = 'status-box show error';
+      statusBox.textContent = '❌ حدث خطأ: ' + error.message;
+    }
+
+    btn.disabled = false;
+    btn.textContent = '📥 تحميل PDF';
+  }
+
+  function goBack() {
+    window.location.href = 'teacher.html';
+  }
+
+  window.addEventListener('load', loadClasses);
+</script>
+
+</body>
+</html>
