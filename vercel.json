@@ -1,7 +1,4 @@
-﻿{
+{
   "version": 2,
-  "name": "school-records-2026",
-  "public": true,
-  "cleanUrls": true,
-  "trailingSlash": false
+  "cleanUrls": true
 }
