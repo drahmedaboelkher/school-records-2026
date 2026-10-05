@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -38,37 +38,6 @@
   }
   .btn-logout:hover { background: #a93226; }
 
-  /* تبويبات */
-  .tabs {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    background: #fff;
-    padding: 8px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 12px 16px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    color: #666;
-    transition: all 0.3s;
-    min-width: 150px;
-  }
-  .tab-btn:hover { background: #f5f7fa; color: #1a5276; }
-  .tab-btn.active { background: #1a5276; color: #fff; }
-
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
   .cards-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 15px; margin-bottom: 25px;
@@ -91,6 +60,23 @@
     gap: 8px;
   }
 
+  .tabs {
+    display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap;
+    background: #fff; padding: 8px; border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .tab-btn {
+    flex: 1; padding: 12px 16px; background: transparent;
+    border: none; border-radius: 8px; font-family: inherit;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    color: #666; transition: all 0.3s; min-width: 150px;
+  }
+  .tab-btn:hover { background: #f5f7fa; color: #1a5276; }
+  .tab-btn.active { background: #1a5276; color: #fff; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
   .form-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px; margin-bottom: 20px;
@@ -103,13 +89,13 @@
     color: #1a5276; font-size: 14px;
   }
 
-  .form-group input, .form-group select {
+  .form-group input, .form-group select, .form-group textarea {
     width: 100%; padding: 10px 12px;
     border: 2px solid #ddd; border-radius: 8px;
-    font-size: 14px; background: #f9f9f9;
+    font-family: inherit; font-size: 14px; background: #f9f9f9;
     transition: all 0.3s;
   }
-  .form-group input:focus, .form-group select:focus {
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
     outline: none; border-color: #1a5276; background: #fff;
     box-shadow: 0 0 0 4px rgba(26,82,118,0.1);
   }
@@ -263,7 +249,6 @@
     </div>
   </div>
 
-  <!-- تبويبات -->
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('teachers')">👨‍🏫 المدرسين</button>
     <button class="tab-btn" onclick="switchTab('classes')">📚 الفصول</button>
@@ -283,7 +268,6 @@
         <div class="form-group">
           <label>المادة (افتراضية)</label>
           <input type="text" id="subject" placeholder="مثال: رياضيات">
-          <small class="hint">يمكن للمدرس تغييرها لكل فصل</small>
         </div>
 
         <div class="form-group">
@@ -309,6 +293,29 @@
         <div class="form-group">
           <label>المدرسة</label>
           <input type="text" id="school" placeholder="اسم المدرسة">
+        </div>
+
+        <div class="form-group">
+          <label>رقم الأسبوع الأول</label>
+          <input type="number" id="weekNumber" value="1" min="1" max="30">
+          <small class="hint">مثلاً: 2 = يبدأ من الأسبوع الثاني</small>
+        </div>
+
+        <div class="form-group">
+          <label>تاريخ بداية الأسبوع الأول</label>
+          <input type="date" id="weekStartDate" value="2026-09-19">
+        </div>
+
+        <div class="form-group">
+          <label>أيام الغياب</label>
+          <input type="text" id="attendanceDays" value="الأحد,الاثنين,الثلاثاء,الأربعاء,الخميس">
+          <small class="hint">افصل بينهم بفاصلة</small>
+        </div>
+
+        <div class="form-group">
+          <label>أعمدة الدرجات</label>
+          <input type="text" id="gradeColumns" value="تقييم أسبوعي:15,الواجب:15,سلوك ومواظبة:10,المجموع:40">
+          <small class="hint">الصيغة: اسم:الدرجة القصوى</small>
         </div>
       </div>
 
@@ -390,7 +397,6 @@
 
 </div>
 
-<!-- مودال الكود -->
 <div id="codeModal" class="modal-overlay" style="display:none;">
   <div class="modal">
     <h2 style="text-align:center; color:#27ae60;">✅ تم إنشاء الكود بنجاح</h2>
@@ -434,7 +440,6 @@
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
     document.getElementById('tab-' + tab).classList.add('active');
-
     const tabs = ['teachers', 'classes'];
     const idx = tabs.indexOf(tab);
     if (idx >= 0) {
@@ -460,6 +465,10 @@
     const directorate = document.getElementById('directorate').value.trim();
     const administration = document.getElementById('administration').value.trim();
     const school = document.getElementById('school').value.trim();
+    const weekNumber = document.getElementById('weekNumber').value.trim();
+    const weekStartDate = document.getElementById('weekStartDate').value.trim();
+    const attendanceDays = document.getElementById('attendanceDays').value.trim();
+    const gradeColumns = document.getElementById('gradeColumns').value.trim();
     const messageBox = document.getElementById('createMessage');
 
     if (!teacherName) return showMessage(messageBox, '⚠️ يرجى إدخال اسم المدرس', 'warning');
@@ -476,7 +485,11 @@
         endDate: endDate,
         directorate: directorate,
         administration: administration,
-        school: school
+        school: school,
+        weekNumber: weekNumber,
+        weekStartDate: weekStartDate,
+        attendanceDays: attendanceDays,
+        gradeColumns: gradeColumns
       });
 
       if (result && result.success) {
@@ -541,7 +554,7 @@
               <th>#</th>
               <th>اسم المدرس</th>
               <th>المادة</th>
-              <th>الفترة</th>
+              <th>الأسبوع</th>
               <th>المديرية / الإدارة / المدرسة</th>
               <th>الكود</th>
               <th>إجراء</th>
@@ -551,9 +564,6 @@
       `;
 
       result.teachers.forEach((t, idx) => {
-        const period = (t.startDate && t.endDate) 
-          ? t.startDate + '<br>' + t.endDate 
-          : '-';
         const location = 
           (t.directorate || '') + '<br>' +
           '<small>' + (t.administration || '') + '</small><br>' +
@@ -564,7 +574,7 @@
             <td>${idx + 1}</td>
             <td><strong>${t.name}</strong></td>
             <td>${t.subject}</td>
-            <td style="font-size:11px;">${period}</td>
+            <td>${t.weekNumber || 1}</td>
             <td style="font-size:11px;">${location}</td>
             <td><span class="code-badge">${t.code}</span></td>
             <td>
@@ -584,7 +594,7 @@
   }
 
   async function deleteTeacher(code, name) {
-    if (!confirm('هل أنت متأكد من حذف المدرس "' + name + '"؟\nالكود: ' + code)) return;
+    if (!confirm('هل أنت متأكد من حذف المدرس "' + name + '"؟')) return;
 
     try {
       const result = await API.requestGet('deleteTeacher', { code: code });
@@ -647,7 +657,7 @@
         list.innerHTML = `
           <div class="empty-message">
             <span class="icon">📭</span>
-            لا يوجد فصول حتى الآن. اضغط "إضافة الفصل" للبدء.
+            لا يوجد فصول حتى الآن.
           </div>
         `;
         document.getElementById('totalClasses').textContent = '0';
@@ -656,7 +666,6 @@
       }
 
       allClasses = result.classes;
-
       document.getElementById('totalClasses').textContent = result.classes.length;
       const uniqueGrades = new Set(result.classes.map(c => c.grade)).size;
       document.getElementById('totalGrades').textContent = uniqueGrades;
