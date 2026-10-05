@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -66,6 +66,9 @@
 
   .btn-open-small { background: #3498db; color: #fff; padding: 6px 12px; font-size: 12px; }
   .btn-open-small:hover { background: #2980b9; }
+
+  .btn-add-col { background: #9b59b6; color: #fff; padding: 8px 16px; font-size: 13px; }
+  .btn-add-col:hover { background: #7d3c98; }
 
   .panel {
     background: #fff; border-radius: 12px; padding: 25px;
@@ -196,6 +199,7 @@
     padding: 12px 14px;
     border: 2px solid #ddd;
     border-radius: 8px;
+    font-family: inherit;
     font-size: 14px;
     background: #f9f9f9;
     transition: all 0.3s;
@@ -270,6 +274,83 @@
     margin-right: 8px;
   }
   .count-badge.green { background: #27ae60; }
+
+  .columns-list {
+    background: #f9f9f9;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  .columns-list h4 {
+    color: #1a5276;
+    font-size: 14px;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .column-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+  }
+  .column-row input {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .column-row input.col-name { flex: 2; }
+  .column-row input.col-max { flex: 1; max-width: 80px; }
+  .column-row .btn-delete-col {
+    background: #c0392b; color: #fff; border: none;
+    padding: 4px 10px; border-radius: 4px; cursor: pointer;
+    font-size: 12px; font-weight: 700;
+  }
+
+  .days-list {
+    background: #f9f9f9;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  .days-list h4 {
+    color: #1a5276;
+    font-size: 14px;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .days-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .day-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 2px solid #e0e0e0;
+    cursor: pointer;
+  }
+  .day-checkbox input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  .day-checkbox label {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    margin: 0;
+  }
 
   .modal-overlay {
     position: fixed;
@@ -361,10 +442,12 @@
   <div id="classDetailsPanel" style="display:none;">
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('info')">📝 بيانات الفصل</button>
+      <button class="tab-btn" onclick="switchTab('columns')">⚙️ أعمدة الدرجات</button>
       <button class="tab-btn" onclick="switchTab('students')">👥 أسماء الطلاب</button>
-      <button class="tab-btn" onclick="switchTab('back')">⬅️ رجوع للفصول</button>
+      <button class="tab-btn" onclick="switchTab('back')">⬅️ رجوع</button>
     </div>
 
+    <!-- تبويب بيانات الفصل -->
     <div id="tab-info" class="tab-content">
       <div class="panel">
         <h2>📝 بيانات الفصل <span id="currentClassNameLabel" style="color:#c0392b;"></span></h2>
@@ -385,7 +468,6 @@
           <div class="form-group">
             <label>المادة (لكل فصل)</label>
             <input type="text" id="editSubject" placeholder="مثال: رياضيات">
-            <small class="hint">المادة اللي بتدرّسها في الفصل ده</small>
           </div>
           <div class="form-group">
             <label>المديرية</label>
@@ -410,6 +492,43 @@
       </div>
     </div>
 
+    <!-- تبويب أعمدة الدرجات -->
+    <div id="tab-columns" class="tab-content" style="display:none;">
+      <div class="panel">
+        <h2>⚙️ تخصيص أعمدة الدرجات</h2>
+
+        <div class="form-group">
+          <label>رقم الأسبوع الأول</label>
+          <input type="number" id="editWeekNumber" min="1" max="30">
+          <small class="hint">مثلاً: 2 = يبدأ من الأسبوع الثاني</small>
+        </div>
+
+        <div class="form-group">
+          <label>تاريخ بداية الأسبوع الأول</label>
+          <input type="date" id="editWeekStartDate">
+        </div>
+
+        <div class="columns-list">
+          <h4>📊 أعمدة الدرجات</h4>
+          <div id="columnsContainer"></div>
+          <button class="btn-add-col" onclick="addColumn()" style="margin-top:10px;">➕ إضافة عمود</button>
+        </div>
+
+        <div class="days-list">
+          <h4>📅 أيام الغياب</h4>
+          <div class="days-checkboxes" id="daysContainer"></div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;">
+          <button class="btn-save" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+          <button class="btn-print" onclick="goToPrint()">🖨️ طباعة السجل</button>
+        </div>
+
+        <div id="columnsMessage" class="message-box"></div>
+      </div>
+    </div>
+
+    <!-- تبويب أسماء الطلاب -->
     <div id="tab-students" class="tab-content" style="display:none;">
       <div class="panel">
         <h2>
@@ -475,10 +594,16 @@
   const TEACHER_DIRECTORATE = localStorage.getItem('teacher_directorate') || '';
   const TEACHER_ADMINISTRATION = localStorage.getItem('teacher_administration') || '';
   const TEACHER_SCHOOL = localStorage.getItem('teacher_school') || '';
+  const TEACHER_WEEK_NUMBER = Number(localStorage.getItem('teacher_week_number')) || 1;
+  const TEACHER_WEEK_START_DATE = localStorage.getItem('teacher_week_start_date') || '2026-09-19';
+  const TEACHER_ATTENDANCE_DAYS = localStorage.getItem('teacher_attendance_days') || 'الأحد,الاثنين,الثلاثاء,الأربعاء,الخميس';
+  const TEACHER_GRADE_COLUMNS = localStorage.getItem('teacher_grade_columns') || 'تقييم أسبوعي:15,الواجب:15,سلوك ومواظبة:10,المجموع:40';
 
   let currentClassId = null;
   let myClasses = [];
   let availableClasses = [];
+  let currentColumns = [];
+  let currentDays = [];
 
   if (!TEACHER_CODE) {
     window.location.href = 'index.html';
@@ -495,6 +620,9 @@
     }
   }
 
+  // ============================================================
+  // تحميل الفصول
+  // ============================================================
   async function loadMyClasses() {
     const list = document.getElementById('classesList');
     list.innerHTML = '<div class="empty-message"><span class="icon">⏳</span>جاري التحميل...</div>';
@@ -558,13 +686,11 @@
     document.getElementById('addClassModal').style.display = 'flex';
     document.getElementById('addClassMessage').innerHTML = '';
 
-    // جلب الفصول المتاحة
     try {
       const result = await API.requestGet('getAllAvailableClasses');
       if (result && result.success && result.classes) {
         availableClasses = result.classes;
 
-        // الفصول اللي مش مع المدرس
         const myIds = myClasses.map(c => String(c.classId));
         const remaining = availableClasses.filter(c => !myIds.includes(String(c.classId)));
 
@@ -659,10 +785,11 @@
 
     document.getElementById('tab-' + tab).style.display = 'block';
     const buttons = document.querySelectorAll('.tab-btn');
-    const tabMap = { info: 0, students: 1 };
+    const tabMap = { info: 0, columns: 1, students: 2 };
     if (buttons[tabMap[tab]]) buttons[tabMap[tab]].classList.add('active');
 
     if (tab === 'students' && currentClassId) loadStudents();
+    if (tab === 'columns') loadSettings();
   }
 
   async function saveClassSubject() {
@@ -710,6 +837,119 @@
     } catch (error) {
       console.error(error);
     }
+  }
+
+  // ============================================================
+  // الإعدادات (الأعمدة + الأيام)
+  // ============================================================
+  function loadSettings() {
+    // رقم الأسبوع
+    document.getElementById('editWeekNumber').value = TEACHER_WEEK_NUMBER;
+    document.getElementById('editWeekStartDate').value = TEACHER_WEEK_START_DATE;
+
+    // الأعمدة
+    currentColumns = [];
+    if (TEACHER_GRADE_COLUMNS) {
+      TEACHER_GRADE_COLUMNS.split(',').forEach(function(item) {
+        const parts = item.trim().split(':');
+        if (parts[0]) {
+          currentColumns.push({
+            label: parts[0],
+            max: parts[1] || ''
+          });
+        }
+      });
+    }
+    renderColumns();
+
+    // الأيام
+    currentDays = TEACHER_ATTENDANCE_DAYS.split(',').map(d => d.trim());
+    renderDays();
+  }
+
+  function renderColumns() {
+    const container = document.getElementById('columnsContainer');
+    let html = '';
+
+    currentColumns.forEach(function(col, idx) {
+      html += '<div class="column-row">';
+      html += '<input type="text" class="col-name" value="' + escapeHTML(col.label) + '" placeholder="اسم العمود" onchange="updateColumn(' + idx + ', \'label\', this.value)">';
+      html += '<input type="number" class="col-max" value="' + (col.max || '') + '" placeholder="الدرجة" onchange="updateColumn(' + idx + ', \'max\', this.value)">';
+      html += '<button class="btn-delete-col" onclick="deleteColumn(' + idx + ')">🗑️</button>';
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  function renderDays() {
+    const container = document.getElementById('daysContainer');
+    const allDays = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+    let html = '';
+
+    allDays.forEach(function(day) {
+      const checked = currentDays.includes(day) ? 'checked' : '';
+      html += '<div class="day-checkbox">';
+      html += '<input type="checkbox" id="day_' + day + '" ' + checked + ' onchange="toggleDay(\'' + day + '\', this.checked)">';
+      html += '<label for="day_' + day + '">' + day + '</label>';
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  function updateColumn(idx, field, value) {
+    if (currentColumns[idx]) {
+      currentColumns[idx][field] = value;
+    }
+  }
+
+  function deleteColumn(idx) {
+    if (!confirm('حذف هذا العمود؟')) return;
+    currentColumns.splice(idx, 1);
+    renderColumns();
+  }
+
+  function addColumn() {
+    currentColumns.push({ label: 'عمود جديد', max: 10 });
+    renderColumns();
+  }
+
+  function toggleDay(day, checked) {
+    if (checked) {
+      if (!currentDays.includes(day)) currentDays.push(day);
+    } else {
+      currentDays = currentDays.filter(d => d !== day);
+    }
+  }
+
+  async function saveSettings() {
+    const messageBox = document.getElementById('columnsMessage');
+    const weekNumber = document.getElementById('editWeekNumber').value;
+    const weekStartDate = document.getElementById('editWeekStartDate').value;
+
+    if (!weekNumber || weekNumber < 1) {
+      return showMessage(messageBox, '⚠️ يرجى إدخال رقم الأسبوع', 'warning');
+    }
+
+    if (currentColumns.length === 0) {
+      return showMessage(messageBox, '⚠️ يجب أن يكون هناك عمود واحد على الأقل', 'warning');
+    }
+
+    if (currentDays.length === 0) {
+      return showMessage(messageBox, '⚠️ يجب اختيار يوم واحد على الأقل للغياب', 'warning');
+    }
+
+    const columnsStr = currentColumns.map(c => c.label + ':' + c.max).join(',');
+    const daysStr = currentDays.join(',');
+
+    // تخزين محلي
+    localStorage.setItem('teacher_week_number', weekNumber);
+    localStorage.setItem('teacher_week_start_date', weekStartDate);
+    localStorage.setItem('teacher_grade_columns', columnsStr);
+    localStorage.setItem('teacher_attendance_days', daysStr);
+
+    showMessage(messageBox, '✅ تم حفظ الإعدادات بنجاح', 'success');
   }
 
   // ============================================================
