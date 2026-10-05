@@ -7,6 +7,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
   * {
@@ -58,6 +59,12 @@
   }
   .btn-download:hover { background: #1e8449; transform: translateY(-2px); }
   .btn-download:disabled { background: #95a5a6; cursor: wait; transform: none; }
+
+  .btn-excel {
+    background: #217346; color: #fff;
+    font-size: 14px; padding: 12px 28px;
+  }
+  .btn-excel:hover { background: #185c37; transform: translateY(-2px); }
 
   .classes-selector {
     background: #f9f9f9;
@@ -146,70 +153,74 @@
 
   #printArea { display: block; }
 
+  /* ============================================================
+     صفحة A4 - هوامش صفر
+     ============================================================ */
   .page {
     width: 210mm;
     height: 297mm;
-    padding: 4mm;
-    margin: 0 auto 20px;
+    padding: 2mm;
+    margin: 0 auto 10px;
     background: #fff;
-    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
     overflow: hidden;
     position: relative;
     page-break-after: always;
   }
   .page:last-child { page-break-after: auto; }
 
+  /* الغلاف */
   .cover-page {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 20mm 15mm;
+    padding: 15mm 10mm;
   }
-  .cover-header { text-align: center; margin-bottom: 15mm; }
+  .cover-header { text-align: center; margin-bottom: 10mm; }
   .cover-header .logo {
-    width: 100px; height: 100px;
-    margin: 0 auto 10mm; display: block;
+    width: 80px; height: 80px;
+    margin: 0 auto 6mm; display: block;
   }
   .cover-header .country {
-    font-size: 20px; font-weight: 800;
-    color: #1a5276; margin-bottom: 4mm;
-  }
-  .cover-header .ministry {
-    font-size: 18px; font-weight: 700;
+    font-size: 18px; font-weight: 800;
     color: #1a5276; margin-bottom: 3mm;
   }
+  .cover-header .ministry {
+    font-size: 16px; font-weight: 700;
+    color: #1a5276; margin-bottom: 2mm;
+  }
   .cover-header .directorate {
-    font-size: 16px; font-weight: 600;
-    color: #333; margin-bottom: 2mm;
+    font-size: 14px; font-weight: 600;
+    color: #333; margin-bottom: 1.5mm;
   }
   .cover-body {
     flex: 1; display: flex;
     flex-direction: column; justify-content: center;
   }
   .cover-title {
-    font-size: 28px; font-weight: 800;
+    font-size: 26px; font-weight: 800;
     color: #1a5276; text-align: center;
-    margin-bottom: 10mm; padding: 8mm;
+    margin-bottom: 8mm; padding: 6mm;
     border-top: 4px solid #d4af37;
     border-bottom: 4px solid #d4af37;
     background: #faf8f0;
   }
   .cover-subtitle {
-    font-size: 16px; font-weight: 600;
+    font-size: 15px; font-weight: 600;
     color: #c0392b; text-align: center;
-    margin-bottom: 15mm;
+    margin-bottom: 12mm;
   }
   .cover-info {
     background: #f9f9f9;
     border: 2px solid #ddd;
     border-radius: 8px;
-    padding: 10mm; margin-bottom: 10mm;
+    padding: 8mm; margin-bottom: 8mm;
   }
   .cover-info table { width: 100%; border-collapse: collapse; }
   .cover-info table td {
-    padding: 4mm 3mm;
+    padding: 3mm 2mm;
     border-bottom: 1px solid #eee;
-    font-size: 15px;
+    font-size: 14px;
   }
   .cover-info table td:first-child {
     font-weight: 700; color: #1a5276; width: 40%;
@@ -218,87 +229,90 @@
     color: #333; font-weight: 600;
   }
   .cover-footer {
-    text-align: center; font-size: 14px;
-    color: #666; padding-top: 10mm;
+    text-align: center; font-size: 13px;
+    color: #666; padding-top: 8mm;
     border-top: 2px solid #d4af37;
   }
 
-  .approval-page { padding: 20mm 15mm; }
+  /* الاعتماد */
+  .approval-page { padding: 15mm 10mm; }
   .approval-title {
-    font-size: 22px; font-weight: 800;
+    font-size: 20px; font-weight: 800;
     color: #1a5276; text-align: center;
-    margin-bottom: 15mm; padding-bottom: 5mm;
+    margin-bottom: 12mm; padding-bottom: 4mm;
     border-bottom: 3px solid #d4af37;
   }
   .approval-text {
-    font-size: 15px; line-height: 2.2;
+    font-size: 14px; line-height: 2;
     color: #333; text-align: justify;
-    margin-bottom: 15mm;
+    margin-bottom: 12mm;
   }
   .approval-table {
-    width: 100%; border-collapse: collapse; margin-top: 10mm;
+    width: 100%; border-collapse: collapse; margin-top: 8mm;
   }
   .approval-table th,
   .approval-table td {
     border: 1px solid #333;
-    padding: 5mm 3mm;
-    text-align: center; font-size: 14px;
+    padding: 4mm 2mm;
+    text-align: center; font-size: 13px;
   }
   .approval-table th {
     background: #1a5276; color: #fff; font-weight: 700;
   }
-  .approval-table td { height: 15mm; }
+  .approval-table td { height: 12mm; }
   .approval-signatures {
     display: flex; justify-content: space-between;
-    margin-top: 20mm; padding-top: 8mm;
+    margin-top: 15mm; padding-top: 6mm;
     border-top: 2px solid #999;
   }
   .approval-signatures .sig-item {
     text-align: center; font-weight: 700;
-    color: #1a5276; font-size: 14px;
+    color: #1a5276; font-size: 13px;
   }
 
+  /* هيدر مصغر */
   .record-header {
     text-align: center;
-    margin-bottom: 2mm;
-    padding-bottom: 2mm;
-    border-bottom: 2px solid #d4af37;
+    margin-bottom: 1mm;
+    padding-bottom: 1mm;
+    border-bottom: 1.5px solid #d4af37;
   }
   .record-header .header-top {
     display: flex; justify-content: space-between;
-    align-items: center; margin-bottom: 2mm; font-size: 9px;
+    align-items: center; margin-bottom: 1mm; font-size: 8px;
   }
   .record-header .header-top .right-info {
-    text-align: right; line-height: 1.6;
+    text-align: right; line-height: 1.3;
     color: #1a5276; font-weight: 700; flex: 1;
   }
   .record-header .header-top .center-logo {
-    flex: 0 0 20mm; text-align: center;
+    flex: 0 0 14mm; text-align: center;
   }
   .record-header .header-top .center-logo img {
-    width: 16mm; height: 16mm;
+    width: 12mm; height: 12mm;
   }
   .record-header .header-top .left-info {
-    text-align: left; line-height: 1.6;
+    text-align: left; line-height: 1.3;
     color: #1a5276; font-weight: 700; flex: 1;
   }
   .record-header .record-title {
-    font-size: 13px; font-weight: 800;
+    font-size: 12px; font-weight: 800;
     color: #1a5276; text-align: center;
-    padding: 1mm; background: #faf8f0;
+    padding: 0.5mm; background: #faf8f0;
   }
   .record-header .record-title .subject {
-    color: #c0392b; font-size: 12px;
+    color: #c0392b; font-size: 11px;
   }
   .record-header .teacher-line {
-    font-size: 10px; font-weight: 700;
-    color: #1a5276; margin-top: 1mm;
+    font-size: 9px; font-weight: 700;
+    color: #1a5276; margin-top: 0.5mm;
   }
 
+  /* الجدول - خط أكبر */
   .grades-table {
     width: 100%; border-collapse: collapse;
-    font-size: 7px; table-layout: fixed;
-    margin-top: 1mm;
+    font-size: 10px; table-layout: fixed;
+    margin-top: 0.5mm;
   }
   .grades-table td {
     border: 1px solid #333;
@@ -307,47 +321,49 @@
   }
   .grades-table td.label-cell {
     background: #f0f0f0; font-weight: 700;
-    font-size: 7px; color: #1a5276; height: 4mm;
+    font-size: 10px; color: #1a5276; height: 5mm;
   }
   .grades-table td.week-header {
     background: #e8e8e8; font-weight: 700;
-    font-size: 6px; color: #1a5276;
-    line-height: 1.15; height: 4.5mm;
+    font-size: 9px; color: #1a5276;
+    line-height: 1.1; height: 5.5mm;
   }
   .grades-table td.sub-header {
     background: #f5f5f5; font-weight: 600;
-    font-size: 5.5px; color: #1a5276;
-    line-height: 1.15; height: 3.5mm;
+    font-size: 8px; color: #1a5276;
+    line-height: 1.1; height: 4.5mm;
   }
   .grades-table td.max-header {
     background: #d4af37; color: #fff;
-    font-weight: 700; font-size: 6px; height: 3.5mm;
+    font-weight: 700; font-size: 9px; height: 4.5mm;
   }
   .grades-table td.name-cell {
-    text-align: right; padding: 0 3px;
-    font-size: 8px; font-weight: 600;
+    text-align: right; padding: 0 4px;
+    font-size: 12px; font-weight: 600;
     white-space: nowrap; overflow: hidden;
-    text-overflow: ellipsis; height: 4.5mm;
+    text-overflow: ellipsis; height: 5.5mm;
   }
   .grades-table td.num-cell {
-    width: 5mm; font-weight: 700;
-    background: #f9f9f9; font-size: 7.5px; height: 4.5mm;
+    width: 6mm; font-weight: 700;
+    background: #f9f9f9; font-size: 10px; height: 5.5mm;
   }
   .grades-table td.grade-cell {
-    height: 4.5mm; width: 6.5mm;
+    height: 5.5mm; width: 5mm;
   }
 
+  /* فوتر مصغر */
   .page-footer {
     display: flex; justify-content: space-between;
-    margin-top: 2mm; padding-top: 1.5mm;
-    border-top: 1px solid #999;
-    font-size: 9px; font-weight: 700; color: #1a5276;
+    margin-top: 1mm; padding-top: 0.8mm;
+    border-top: 0.8px solid #999;
+    font-size: 8px; font-weight: 700; color: #1a5276;
   }
   .page-footer .footer-teacher { color: #c0392b; }
 
+  /* جدول المجموع */
   .total-table {
     width: 100%; border-collapse: collapse;
-    font-size: 8px; table-layout: fixed; margin-top: 1mm;
+    font-size: 11px; table-layout: fixed; margin-top: 0.5mm;
   }
   .total-table td {
     border: 1px solid #333;
@@ -356,39 +372,39 @@
   }
   .total-table td.label-cell {
     background: #f0f0f0; font-weight: 700;
-    font-size: 7px; color: #1a5276; height: 4mm;
+    font-size: 10px; color: #1a5276; height: 5mm;
   }
   .total-table td.group-header {
     background: #e8e8e8; font-weight: 700;
-    font-size: 7px; color: #1a5276; height: 5mm;
+    font-size: 10px; color: #1a5276; height: 6mm;
   }
   .total-table td.max-header {
     background: #d4af37; color: #fff;
-    font-weight: 700; font-size: 7px; height: 4mm;
+    font-weight: 700; font-size: 10px; height: 5mm;
   }
   .total-table td.name-cell {
-    text-align: right; padding: 0 3px;
-    font-size: 8px; font-weight: 600;
+    text-align: right; padding: 0 4px;
+    font-size: 12px; font-weight: 600;
     white-space: nowrap; overflow: hidden;
-    text-overflow: ellipsis; height: 4.5mm;
+    text-overflow: ellipsis; height: 5.5mm;
   }
   .total-table td.num-cell {
-    width: 5mm; font-weight: 700;
-    background: #f9f9f9; font-size: 7.5px; height: 4.5mm;
+    width: 6mm; font-weight: 700;
+    background: #f9f9f9; font-size: 10px; height: 5.5mm;
   }
   .total-table td.grade-cell {
-    height: 4.5mm; width: 8mm;
+    height: 5.5mm; width: 10mm;
   }
 
   @media print {
-    @page { size: A4 portrait; margin: 4mm; }
+    @page { size: A4 portrait; margin: 0; }
     body { background: #fff; padding: 0; margin: 0; }
     .print-controls { display: none !important; }
     .status-box { display: none !important; }
     #printArea { display: block !important; }
     .page {
       width: 100%; height: auto; min-height: auto;
-      padding: 0; margin: 0; box-shadow: none;
+      padding: 2mm; margin: 0; box-shadow: none;
       page-break-after: always;
     }
     .page:last-child { page-break-after: auto; }
@@ -406,6 +422,7 @@
     <span>🖨️ معاينة السجل</span>
     <div class="btns">
       <button class="btn-back" onclick="goBack()">⬅️ رجوع</button>
+      <button class="btn-excel" onclick="exportExcel()">📊 تصدير Excel</button>
       <button class="btn-download" id="downloadBtn" onclick="downloadPDF()">📥 تحميل PDF</button>
     </div>
   </h1>
@@ -436,6 +453,10 @@
   const TEACHER_DIRECTORATE = localStorage.getItem('teacher_directorate') || '';
   const TEACHER_ADMINISTRATION = localStorage.getItem('teacher_administration') || '';
   const TEACHER_SCHOOL = localStorage.getItem('teacher_school') || '';
+  const TEACHER_WEEK_NUMBER = Number(localStorage.getItem('teacher_week_number')) || 1;
+  const TEACHER_WEEK_START_DATE = localStorage.getItem('teacher_week_start_date') || '2026-09-19';
+  const TEACHER_ATTENDANCE_DAYS = localStorage.getItem('teacher_attendance_days') || 'الأحد,الاثنين,الثلاثاء,الأربعاء,الخميس';
+  const TEACHER_GRADE_COLUMNS = localStorage.getItem('teacher_grade_columns') || 'تقييم أسبوعي:15,الواجب:15,سلوك ومواظبة:10,المجموع:40';
 
   if (!TEACHER_CODE) {
     window.location.href = 'index.html';
@@ -444,22 +465,29 @@
   const STUDENTS_PER_PAGE = 50;
   const WEEKS_PER_PAGE = 4;
 
-  // أعمدة الدرجات (سلوك ومواظبة بدل الاختبار القصير)
-  const GRADE_COLUMNS = [
-    { label: 'تقييم أسبوعي', max: 15 },
-    { label: 'الواجب', max: 15 },
-    { label: 'سلوك ومواظبة', max: 10 },
-    { label: 'المجموع', max: 40 }
-  ];
+  // ============================================================
+  // قراءة الإعدادات
+  // ============================================================
+  function getGradeColumns() {
+    const cols = [];
+    TEACHER_GRADE_COLUMNS.split(',').forEach(function(item) {
+      const parts = item.trim().split(':');
+      if (parts[0]) {
+        cols.push({
+          label: parts[0].trim(),
+          max: parts[1] ? parts[1].trim() : ''
+        });
+      }
+    });
+    return cols;
+  }
 
-  // أعمدة الغياب (5 أيام)
-  const ATTENDANCE_COLUMNS = [
-    { label: 'الأحد', max: '' },
-    { label: 'الاثنين', max: '' },
-    { label: 'الثلاثاء', max: '' },
-    { label: 'الأربعاء', max: '' },
-    { label: 'الخميس', max: '' }
-  ];
+  function getAttendanceDays() {
+    return TEACHER_ATTENDANCE_DAYS.split(',').map(d => d.trim()).filter(d => d);
+  }
+
+  const GRADE_COLUMNS = getGradeColumns();
+  const ATTENDANCE_DAYS = getAttendanceDays();
 
   const FINAL_TOTAL_COLUMNS = [
     { label: 'موسوعة الفصل الأول', max: 40 },
@@ -492,7 +520,7 @@
     }
   }
 
-  function calculateWeeks(startDate, endDate) {
+  function calculateWeeks(startDate, endDate, startWeekNumber) {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const weeks = [];
@@ -502,13 +530,16 @@
       'الأسبوع الخامس', 'الأسبوع السادس', 'الأسبوع السابع', 'الأسبوع الثامن',
       'الأسبوع التاسع', 'الأسبوع العاشر', 'الأسبوع الحادي عشر', 'الأسبوع الثاني عشر',
       'الأسبوع الثالث عشر', 'الأسبوع الرابع عشر', 'الأسبوع الخامس عشر', 'الأسبوع السادس عشر',
-      'الأسبوع السابع عشر', 'الأسبوع الثامن عشر', 'الأسبوع التاسع عشر', 'الأسبوع العشرون'
+      'الأسبوع السابع عشر', 'الأسبوع الثامن عشر', 'الأسبوع التاسع عشر', 'الأسبوع العشرون',
+      'الأسبوع الحادي والعشرون', 'الأسبوع الثاني والعشرون', 'الأسبوع الثالث والعشرون', 'الأسبوع الرابع والعشرون',
+      'الأسبوع الخامس والعشرون', 'الأسبوع السادس والعشرون', 'الأسبوع السابع والعشرون', 'الأسبوع الثامن والعشرون',
+      'الأسبوع التاسع والعشرون', 'الأسبوع الثلاثون'
     ];
     
     let current = new Date(start);
-    let index = 0;
+    let index = startWeekNumber - 1; // يبدأ من رقم الأسبوع المحدد
     
-    while (current <= end && index < 20) {
+    while (current <= end && index < 30) {
       const y = current.getFullYear();
       const m = current.getMonth() + 1;
       const d = current.getDate();
@@ -516,7 +547,8 @@
       
       weeks.push({
         name: weekNames[index] || ('الأسبوع ' + (index + 1)),
-        date: dateStr
+        date: dateStr,
+        weekNumber: index + 1
       });
       
       current.setDate(current.getDate() + 7);
@@ -546,7 +578,7 @@
         allClasses = result.classes;
         renderClassSelector();
       } else {
-        printArea.innerHTML = '<div class="loading-box">📭 لا يوجد فصول. أضف فصول من صفحة المدرس.</div>';
+        printArea.innerHTML = '<div class="loading-box">📭 لا يوجد فصول.</div>';
       }
     } catch (error) {
       console.error(error);
@@ -613,7 +645,7 @@
     printArea.innerHTML = '<div class="loading-box">⏳ جاري تحميل البيانات...</div>';
 
     try {
-      const allWeeks = calculateWeeks(TEACHER_START_DATE, TEACHER_END_DATE);
+      const allWeeks = calculateWeeks(TEACHER_WEEK_START_DATE, TEACHER_END_DATE, TEACHER_WEEK_NUMBER);
       const weekGroups = groupWeeks(allWeeks, WEEKS_PER_PAGE);
 
       const fullClassesData = [];
@@ -676,7 +708,6 @@
             <table>
               <tr><td>اسم المعلم</td><td>${escapeHTML(TEACHER_NAME)}</td></tr>
               <tr><td>عدد الفصول</td><td>${classesData.length} فصول</td></tr>
-              <tr><td>الفترة</td><td>${escapeHTML(TEACHER_START_DATE)} → ${escapeHTML(TEACHER_END_DATE)}</td></tr>
             </table>
           </div>
         </div>
@@ -747,13 +778,14 @@
     headerHTML += '</div>';
 
     let tableRows = '';
+    const colCount = GRADE_COLUMNS.length;
 
     // صف 1: أسماء الأسابيع
     tableRows += '<tr>';
-    tableRows += '<td rowspan="3" class="label-cell" style="width:5mm;">م</td>';
-    tableRows += '<td rowspan="3" class="label-cell" style="width:45mm;">الاسم</td>';
+    tableRows += '<td rowspan="3" class="label-cell" style="width:6mm;">م</td>';
+    tableRows += '<td rowspan="3" class="label-cell" style="width:50mm;">الاسم</td>';
     weeksGroup.forEach(function(w) {
-      tableRows += '<td colspan="4" class="week-header">' + w.name + '<br>' + w.date + '</td>';
+      tableRows += '<td colspan="' + colCount + '" class="week-header">' + w.name + '<br>' + w.date + '</td>';
     });
     tableRows += '</tr>';
 
@@ -781,7 +813,7 @@
       tableRows += '<tr>';
       tableRows += '<td class="num-cell">' + (i + 1) + '</td>';
       tableRows += '<td class="name-cell">' + escapeHTML(studentName) + '</td>';
-      for (let j = 0; j < 16; j++) {
+      for (let j = 0; j < colCount * weeksGroup.length; j++) {
         tableRows += '<td class="grade-cell"></td>';
       }
       tableRows += '</tr>';
@@ -801,6 +833,7 @@
     const className = classData.className || '';
     const grade = classData.grade || '';
     const students = classData.students;
+    const dayCount = ATTENDANCE_DAYS.length;
 
     let headerHTML = '<div class="record-header">';
     headerHTML += '<div class="header-top">';
@@ -824,31 +857,28 @@
 
     let tableRows = '';
 
-    // صف 1: أسماء الأسابيع (5 أعمدة لكل أسبوع)
     tableRows += '<tr>';
-    tableRows += '<td rowspan="2" class="label-cell" style="width:5mm;">م</td>';
-    tableRows += '<td rowspan="2" class="label-cell" style="width:45mm;">الاسم</td>';
+    tableRows += '<td rowspan="2" class="label-cell" style="width:6mm;">م</td>';
+    tableRows += '<td rowspan="2" class="label-cell" style="width:50mm;">الاسم</td>';
     weeksGroup.forEach(function(w) {
-      tableRows += '<td colspan="5" class="week-header">' + w.name + '<br>' + w.date + '</td>';
+      tableRows += '<td colspan="' + dayCount + '" class="week-header">' + w.name + '<br>' + w.date + '</td>';
     });
     tableRows += '</tr>';
 
-    // صف 2: أسماء الأيام
     tableRows += '<tr>';
     weeksGroup.forEach(function() {
-      ATTENDANCE_COLUMNS.forEach(function(col) {
-        tableRows += '<td class="sub-header">' + col.label + '</td>';
+      ATTENDANCE_DAYS.forEach(function(day) {
+        tableRows += '<td class="sub-header">' + day + '</td>';
       });
     });
     tableRows += '</tr>';
 
-    // صفوف الطلاب (20 خلية فارغة = 4 أسابيع × 5 أيام)
     for (let i = 0; i < STUDENTS_PER_PAGE; i++) {
       const studentName = students[i] || '';
       tableRows += '<tr>';
       tableRows += '<td class="num-cell">' + (i + 1) + '</td>';
       tableRows += '<td class="name-cell">' + escapeHTML(studentName) + '</td>';
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < dayCount * weeksGroup.length; j++) {
         tableRows += '<td class="grade-cell"></td>';
       }
       tableRows += '</tr>';
@@ -892,8 +922,8 @@
     let tableRows = '';
 
     tableRows += '<tr>';
-    tableRows += '<td rowspan="2" class="label-cell" style="width:5mm;">م</td>';
-    tableRows += '<td rowspan="2" class="label-cell" style="width:45mm;">الاسم</td>';
+    tableRows += '<td rowspan="2" class="label-cell" style="width:6mm;">م</td>';
+    tableRows += '<td rowspan="2" class="label-cell" style="width:50mm;">الاسم</td>';
     FINAL_TOTAL_COLUMNS.forEach(function(col) {
       tableRows += '<td class="group-header">' + col.label + '</td>';
     });
@@ -933,6 +963,103 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  // ============================================================
+  // تصدير Excel
+  // ============================================================
+  async function exportExcel() {
+    const printArea = document.getElementById('printArea');
+    const selectedClasses = getSelectedClasses();
+
+    if (selectedClasses.length === 0) {
+      alert('⚠️ اختر فصل واحد على الأقل');
+      return;
+    }
+
+    const statusBox = document.getElementById('statusBox');
+    statusBox.className = 'status-box show';
+    statusBox.textContent = '⏳ جاري تحضير ملف Excel...';
+
+    try {
+      const wb = XLSX.utils.book_new();
+      const allWeeks = calculateWeeks(TEACHER_WEEK_START_DATE, TEACHER_END_DATE, TEACHER_WEEK_NUMBER);
+
+      for (let i = 0; i < selectedClasses.length; i++) {
+        const cls = selectedClasses[i];
+        const studentsResult = await apiGet('getStudentsByClassId', { classId: cls.classId });
+        const students = (studentsResult && studentsResult.success && studentsResult.students) ? studentsResult.students : [];
+
+        // ورقة الدرجات
+        const gradeData = [];
+        const gradeHeader1 = ['م', 'الاسم'];
+        const gradeHeader2 = ['', ''];
+
+        allWeeks.forEach(function(w) {
+          GRADE_COLUMNS.forEach(function(col) {
+            gradeHeader1.push(w.name + ' - ' + w.date);
+            gradeHeader2.push(col.label + ' (' + col.max + ')');
+          });
+        });
+
+        gradeData.push([cls.grade + ' - ' + cls.className + ' - ' + (cls.subject || '')]);
+        gradeData.push(gradeHeader1);
+        gradeData.push(gradeHeader2);
+
+        for (let j = 0; j < 50; j++) {
+          const row = [j + 1, students[j] ? students[j].studentName : ''];
+          for (let k = 0; k < allWeeks.length * GRADE_COLUMNS.length; k++) {
+            row.push('');
+          }
+          gradeData.push(row);
+        }
+
+        const ws1 = XLSX.utils.aoa_to_sheet(gradeData);
+        XLSX.utils.book_append_sheet(wb, ws1, ('درجات_' + cls.className).substring(0, 30));
+
+        // ورقة الغياب
+        const attData = [];
+        const attHeader1 = ['م', 'الاسم'];
+        const attHeader2 = ['', ''];
+
+        allWeeks.forEach(function(w) {
+          ATTENDANCE_DAYS.forEach(function(day) {
+            attHeader1.push(w.name + ' - ' + w.date);
+            attHeader2.push(day);
+          });
+        });
+
+        attData.push([cls.grade + ' - ' + cls.className + ' - ' + (cls.subject || '')]);
+        attData.push(attHeader1);
+        attData.push(attHeader2);
+
+        for (let j = 0; j < 50; j++) {
+          const row = [j + 1, students[j] ? students[j].studentName : ''];
+          for (let k = 0; k < allWeeks.length * ATTENDANCE_DAYS.length; k++) {
+            row.push('');
+          }
+          attData.push(row);
+        }
+
+        const ws2 = XLSX.utils.aoa_to_sheet(attData);
+        XLSX.utils.book_append_sheet(wb, ws2, ('غياب_' + cls.className).substring(0, 30));
+      }
+
+      const filename = 'سجل_' + TEACHER_NAME + '.xlsx';
+      XLSX.writeFile(wb, filename);
+
+      statusBox.className = 'status-box show success';
+      statusBox.textContent = '✅ تم تصدير Excel بنجاح!';
+
+      setTimeout(function() {
+        statusBox.className = 'status-box';
+      }, 5000);
+
+    } catch (error) {
+      console.error(error);
+      statusBox.className = 'status-box show error';
+      statusBox.textContent = '❌ حدث خطأ: ' + error.message;
+    }
   }
 
   async function downloadPDF() {
