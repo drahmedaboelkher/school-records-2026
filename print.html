@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -444,18 +444,21 @@
   const STUDENTS_PER_PAGE = 50;
   const WEEKS_PER_PAGE = 4;
 
+  // أعمدة الدرجات (سلوك ومواظبة بدل الاختبار القصير)
   const GRADE_COLUMNS = [
     { label: 'تقييم أسبوعي', max: 15 },
     { label: 'الواجب', max: 15 },
-    { label: 'الاختبار القصير', max: 10 },
+    { label: 'سلوك ومواظبة', max: 10 },
     { label: 'المجموع', max: 40 }
   ];
 
+  // أعمدة الغياب (5 أيام)
   const ATTENDANCE_COLUMNS = [
-    { label: 'ح', max: '' },
-    { label: 'غ', max: '' },
-    { label: 'ت', max: '' },
-    { label: 'إذن', max: '' }
+    { label: 'الأحد', max: '' },
+    { label: 'الاثنين', max: '' },
+    { label: 'الثلاثاء', max: '' },
+    { label: 'الأربعاء', max: '' },
+    { label: 'الخميس', max: '' }
   ];
 
   const FINAL_TOTAL_COLUMNS = [
@@ -745,6 +748,7 @@
 
     let tableRows = '';
 
+    // صف 1: أسماء الأسابيع
     tableRows += '<tr>';
     tableRows += '<td rowspan="3" class="label-cell" style="width:5mm;">م</td>';
     tableRows += '<td rowspan="3" class="label-cell" style="width:45mm;">الاسم</td>';
@@ -753,6 +757,7 @@
     });
     tableRows += '</tr>';
 
+    // صف 2: أسماء الأعمدة
     tableRows += '<tr>';
     weeksGroup.forEach(function() {
       GRADE_COLUMNS.forEach(function(col) {
@@ -761,6 +766,7 @@
     });
     tableRows += '</tr>';
 
+    // صف 3: الدرجات القصوى
     tableRows += '<tr>';
     weeksGroup.forEach(function() {
       GRADE_COLUMNS.forEach(function(col) {
@@ -769,6 +775,7 @@
     });
     tableRows += '</tr>';
 
+    // صفوف الطلاب
     for (let i = 0; i < STUDENTS_PER_PAGE; i++) {
       const studentName = students[i] || '';
       tableRows += '<tr>';
@@ -817,14 +824,16 @@
 
     let tableRows = '';
 
+    // صف 1: أسماء الأسابيع (5 أعمدة لكل أسبوع)
     tableRows += '<tr>';
     tableRows += '<td rowspan="2" class="label-cell" style="width:5mm;">م</td>';
     tableRows += '<td rowspan="2" class="label-cell" style="width:45mm;">الاسم</td>';
     weeksGroup.forEach(function(w) {
-      tableRows += '<td colspan="4" class="week-header">' + w.name + '<br>' + w.date + '</td>';
+      tableRows += '<td colspan="5" class="week-header">' + w.name + '<br>' + w.date + '</td>';
     });
     tableRows += '</tr>';
 
+    // صف 2: أسماء الأيام
     tableRows += '<tr>';
     weeksGroup.forEach(function() {
       ATTENDANCE_COLUMNS.forEach(function(col) {
@@ -833,12 +842,13 @@
     });
     tableRows += '</tr>';
 
+    // صفوف الطلاب (20 خلية فارغة = 4 أسابيع × 5 أيام)
     for (let i = 0; i < STUDENTS_PER_PAGE; i++) {
       const studentName = students[i] || '';
       tableRows += '<tr>';
       tableRows += '<td class="num-cell">' + (i + 1) + '</td>';
       tableRows += '<td class="name-cell">' + escapeHTML(studentName) + '</td>';
-      for (let j = 0; j < 16; j++) {
+      for (let j = 0; j < 20; j++) {
         tableRows += '<td class="grade-cell"></td>';
       }
       tableRows += '</tr>';
